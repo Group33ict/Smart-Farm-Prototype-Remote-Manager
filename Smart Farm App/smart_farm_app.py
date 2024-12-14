@@ -190,7 +190,7 @@ def data_simulation():
     return jsonify(response)
 
 
-@app.route('/satics/<path:path>')
+@app.route('/statics/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./statics', path)
