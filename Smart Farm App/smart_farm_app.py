@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, url_for, redirect
+from flask import Flask, jsonify, request, render_template, url_for, redirect, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -87,69 +87,69 @@ def setup_database():
 
 # JWT Authentication API routes
 
-@app.route('/')
-def home():
-    return render_template('home.html')
+# @app.route('/')
+# def home():
+#     return render_template('home.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     form = LoginForm()
 
-    if form.validate_on_submit():
-        # First check if the username is already registered or not
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            # Generate JWT token
-            access_token = create_access_token(identity=user.username)
+#     if form.validate_on_submit():
+#         # First check if the username is already registered or not
+#         user = User.query.filter_by(username=form.username.data).first()
+#         if user and bcrypt.check_password_hash(user.password, form.password.data):
+#             # Generate JWT token
+#             access_token = create_access_token(identity=user.username)
             
-            # Set the token as a cookie for client-side use
-            response = redirect(url_for('dashboard'))  
+#             # Set the token as a cookie for client-side use
+#             response = redirect(url_for('dashboard'))  
 
-            response.set_cookie('access_token', access_token) # Set the JWT token in a cookie 
+#             response.set_cookie('access_token', access_token) # Set the JWT token in a cookie 
 
-            login_user(user)
+#             login_user(user)
             
-            return response  
+#             return response  
 
-        #If log in failed
-        return render_template('login.html', form=form, message="Invalid username or password")
+#         #If log in failed
+#         return render_template('login.html', form=form, message="Invalid username or password")
 
-    return render_template('login.html', form=form)
-
-
-@app.route('/dashboard', methods=['GET', 'POST'])
-@login_required
-def dashboard():
-    token = request.cookies.get('access_token') #Verify if JWT is sucessfully stored in a cookie
-    print(f"JWT Token: {token}")  # Log the token received from cookies in terminal
-    return render_template('dashboard.html', token=token)
+#     return render_template('login.html', form=form)
 
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    form = RegisterForm()
-
-    if form.validate_on_submit():
-        # Check if username already exists
-        if User.query.filter_by(username=form.username.data).first():
-            return render_template('register.html', form=form, message="Username already exists")
-
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        new_user = User(username=form.username.data, password=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-
-    return render_template('register.html', form=form)
+# @app.route('/dashboard', methods=['GET', 'POST'])
+# @login_required
+# def dashboard():
+#     token = request.cookies.get('access_token') #Verify if JWT is sucessfully stored in a cookie
+#     print(f"JWT Token: {token}")  # Log the token received from cookies in terminal
+#     return render_template('dashboard.html', token=token)
 
 
-@app.route('/logout', methods=['GET', 'POST'])
-@login_required
-def logout():
-    response = redirect(url_for('login'))  
-    unset_jwt_cookies(response)  # Unset the JWT token cookie
-    return response
+# @app.route('/register', methods=['GET', 'POST'])
+# def register():
+#     form = RegisterForm()
+
+#     if form.validate_on_submit():
+#         # Check if username already exists
+#         if User.query.filter_by(username=form.username.data).first():
+#             return render_template('register.html', form=form, message="Username already exists")
+
+#         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+#         new_user = User(username=form.username.data, password=hashed_password)
+#         db.session.add(new_user)
+#         db.session.commit()
+#         return redirect(url_for('login'))
+
+#     return render_template('register.html', form=form)
+
+
+# @app.route('/logout', methods=['GET', 'POST'])
+# @login_required
+# def logout():
+#     response = redirect(url_for('login'))  
+#     unset_jwt_cookies(response)  # Unset the JWT token cookie
+#     return response
 
 
 
@@ -188,6 +188,12 @@ def data_simulation():
         "data": [{"parameter": item.parameter, "unit": item.unit, "value": item.value} for item in updated_data]
     }
     return jsonify(response)
+
+
+@app.route('/satics/<path:path>')
+def send_report(path):
+    # Using request args for path will expose you to directory traversal attacks
+    return send_from_directory('reports', path)
 
 
 
