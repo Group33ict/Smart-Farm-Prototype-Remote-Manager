@@ -227,10 +227,10 @@ def data_simulation():
     return jsonify(response)
 
 
-@app.route('/statics/<path:path>')
+@app.route('/statics/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
-    return send_from_directory('./statics', path)
+    return send_from_directory('./statics/iot/templates', path)
 
 
 
