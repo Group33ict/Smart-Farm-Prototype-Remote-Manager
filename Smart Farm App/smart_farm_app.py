@@ -33,13 +33,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-#User Data model
+# User Data model
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
 
 
+# Flask WTForms
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
@@ -52,6 +53,7 @@ class RegisterForm(FlaskForm):
             raise ValidationError('That username already exists. Please choose a different one.')
 
 
+# Flask WTForms
 class LoginForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
@@ -66,6 +68,7 @@ class SmartFarmData(db.Model):
     value = db.Column(db.String(50), nullable=True)
 
 
+# Set up database function
 def setup_database():
     """Initializes the database and populates default values if the table is empty."""
     with app.app_context():
@@ -82,6 +85,40 @@ def setup_database():
                 new_entry = SmartFarmData(**item)
                 db.session.add(new_entry)
             db.session.commit()
+
+
+# Control the Smart Farm prototype function
+def update_parameter(parameter_name):
+    # Query the database, check if the parameter is existed or not
+    data_entry = SmartFarmData.query.filter_by(parameter=parameter_name).first()
+    
+    # If not existed
+    if not data_entry:
+        return jsonify({
+            "status": "error",
+            "message": f"Parameter '{parameter_name}' not found."
+        }), 404
+
+    #If existed, POST a JSON file to update the data of that paremeter
+    incoming_data = request.get_json()
+    if 'value' not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "No value provided in the request."
+        }), 400
+
+    data_entry.value = incoming_data['value']
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"{parameter_name.replace('_', ' ').capitalize()} updated successfully.",
+        "data": {
+            "parameter": data_entry.parameter,
+            "unit": data_entry.unit,
+            "value": data_entry.value
+        }
+    }), 200
 
 
 
@@ -146,6 +183,7 @@ def dashboard():
 
 @app.route('/register', methods=['POST'])
 def register():
+    # Parse JSON data
     if request.is_json:
         data = request.get_json()
         username = data.get('username')
@@ -227,6 +265,32 @@ def data_simulation():
     return jsonify(response)
 
 
+@app.route('/update_temperature', methods=['POST'])
+@jwt_required()
+def update_temperature():
+    return update_parameter('temperature')
+
+
+@app.route('/update_humidity', methods=['POST'])
+@jwt_required()
+def update_humidity():
+    return update_parameter('humidity')
+
+
+@app.route('/update_co2_concentration', methods=['POST'])
+@jwt_required()
+def update_co2_concentration():
+    return update_parameter('co2_concentration')
+
+
+@app.route('/update_light_intensity', methods=['POST'])
+@jwt_required()
+def update_light_intensity():
+    return update_parameter('light_intensity')
+
+
+
+# Serve static file function
 @app.route('/statics/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
