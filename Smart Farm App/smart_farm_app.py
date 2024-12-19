@@ -33,13 +33,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-#User Data model
+# User Data model
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=False)
 
 
+# Flask WTForms
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
@@ -52,6 +53,7 @@ class RegisterForm(FlaskForm):
             raise ValidationError('That username already exists. Please choose a different one.')
 
 
+# Flask WTForms
 class LoginForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
@@ -66,6 +68,7 @@ class SmartFarmData(db.Model):
     value = db.Column(db.String(50), nullable=True)
 
 
+# Set up database function
 def setup_database():
     """Initializes the database and populates default values if the table is empty."""
     with app.app_context():
@@ -84,72 +87,144 @@ def setup_database():
             db.session.commit()
 
 
+# Control the Smart Farm prototype function
+def update_parameter(parameter_name):
+    # Query the database, check if the parameter is existed or not
+    data_entry = SmartFarmData.query.filter_by(parameter=parameter_name).first()
+    
+    # If not existed
+    if not data_entry:
+        return jsonify({
+            "status": "error",
+            "message": f"Parameter '{parameter_name}' not found."
+        }), 404
+
+    #If existed, POST a JSON file to update the data of that paremeter
+    incoming_data = request.get_json()
+    if 'value' not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "No value provided in the request."
+        }), 400
+
+    data_entry.value = incoming_data['value']
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": f"{parameter_name.replace('_', ' ').capitalize()} updated successfully.",
+        "data": {
+            "parameter": data_entry.parameter,
+            "unit": data_entry.unit,
+            "value": data_entry.value
+        }
+    }), 200
+
+
 
 # JWT Authentication API routes
 
-# @app.route('/')
-# def home():
-#     return render_template('home.html')
+@app.route('/')
+def home():
+    response = {
+        "status": "success",
+        "message": "Welcome to the Home Page."
+    }
+    return jsonify(response)
 
 
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     form = LoginForm()
+@app.route('/login', methods=['POST'])
+def login():
+    # Parse JSON data from the request body
+    data = request.get_json()
 
-#     if form.validate_on_submit():
-#         # First check if the username is already registered or not
-#         user = User.query.filter_by(username=form.username.data).first()
-#         if user and bcrypt.check_password_hash(user.password, form.password.data):
-#             # Generate JWT token
-#             access_token = create_access_token(identity=user.username)
-            
-#             # Set the token as a cookie for client-side use
-#             response = redirect(url_for('dashboard'))  
+    # Extract username and password from the parsed data
+    username = data.get('username')
+    password = data.get('password')
 
-#             response.set_cookie('access_token', access_token) # Set the JWT token in a cookie 
+    # Check if both username and password are provided
+    if not username or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Username and password are required."
+        }), 400
 
-#             login_user(user)
-            
-#             return response  
+    # Query the database for the user
+    user = User.query.filter_by(username=username).first()
 
-#         #If log in failed
-#         return render_template('login.html', form=form, message="Invalid username or password")
+    # Verify the user's existence and password
+    if user and bcrypt.check_password_hash(user.password, password):
+        # Generate JWT token
+        access_token = create_access_token(identity=user.username)
+        login_user(user)
 
-#     return render_template('login.html', form=form)
+        return jsonify({
+            "status": "success",
+            "message": "Login successful.",
+            "token": access_token
+        }), 200
 
-
-# @app.route('/dashboard', methods=['GET', 'POST'])
-# @login_required
-# def dashboard():
-#     token = request.cookies.get('access_token') #Verify if JWT is sucessfully stored in a cookie
-#     print(f"JWT Token: {token}")  # Log the token received from cookies in terminal
-#     return render_template('dashboard.html', token=token)
-
-
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     form = RegisterForm()
-
-#     if form.validate_on_submit():
-#         # Check if username already exists
-#         if User.query.filter_by(username=form.username.data).first():
-#             return render_template('register.html', form=form, message="Username already exists")
-
-#         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-#         new_user = User(username=form.username.data, password=hashed_password)
-#         db.session.add(new_user)
-#         db.session.commit()
-#         return redirect(url_for('login'))
-
-#     return render_template('register.html', form=form)
+    # If authentication fails
+    return jsonify({
+        "status": "error",
+        "message": "Invalid username or password."
+    }), 401
 
 
-# @app.route('/logout', methods=['GET', 'POST'])
-# @login_required
-# def logout():
-#     response = redirect(url_for('login'))  
-#     unset_jwt_cookies(response)  # Unset the JWT token cookie
-#     return response
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    response = {
+        "status": "success",
+        "message": "Welcome to the Dashboard."
+    }
+    return jsonify(response)
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    # Parse JSON data
+    if request.is_json:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+
+        # Validate username
+        if not username or len(username) < 4 or len(username) > 20:
+            return jsonify({"status": "error", "message": "Invalid username length."}), 400
+
+        # Validate password
+        if not password or len(password) < 8 or len(password) > 20:
+            return jsonify({"status": "error", "message": "Invalid password length."}), 400
+
+        # Check if username already exists
+        if User.query.filter_by(username=username).first():
+            return jsonify({"status": "error", "message": "Username already exists."}), 400
+
+        # Hash the password and create a new user
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(username=username, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"status": "success", "message": "Registration successful."}), 201
+
+    return jsonify({"status": "error", "message": "Invalid request format."}), 400
+
+
+@app.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    # Create a response object with a success message
+    response = jsonify({
+        "status": "success",
+        "message": "Logout successful."
+    })
+    # Unset the JWT cookies in the response
+    unset_jwt_cookies(response)
+    # Log out the user
+    logout_user()
+    return response, 200
 
 
 
@@ -190,10 +265,36 @@ def data_simulation():
     return jsonify(response)
 
 
-@app.route('/statics/<path:path>')
+@app.route('/update_temperature', methods=['POST'])
+@jwt_required()
+def update_temperature():
+    return update_parameter('temperature')
+
+
+@app.route('/update_humidity', methods=['POST'])
+@jwt_required()
+def update_humidity():
+    return update_parameter('humidity')
+
+
+@app.route('/update_co2_concentration', methods=['POST'])
+@jwt_required()
+def update_co2_concentration():
+    return update_parameter('co2_concentration')
+
+
+@app.route('/update_light_intensity', methods=['POST'])
+@jwt_required()
+def update_light_intensity():
+    return update_parameter('light_intensity')
+
+
+
+# Serve static file function
+@app.route('/statics/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
-    return send_from_directory('./statics', path)
+    return send_from_directory('./statics/iot/templates', path)
 
 
 
