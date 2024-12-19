@@ -7,28 +7,40 @@ document.getElementById("signup-form").addEventListener("submit", async function
   
     // Log user information to the console
     console.log("User Signup Info:", { name, email, password });
-  
-    // Simulate API call
-    /*
-    try {
-      const response = await fetch("http://127.0.0.1:5000/statics/iot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        alert("Sign up successful! Please sign in.");
-        window.location.href = "signin.html";
-      } else {
-        document.getElementById("signup-error-message").innerText = data.message || "Sign up failed!";
-      }
-    } catch (error) {
-      document.getElementById("signup-error-message").innerText = "An error occurred. Please try again.";
-      console.error("Error:", error);
-    }
-    */
+
   });
+
+/*
+document.getElementById("signupForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const username = document.getElementById("signupUsername").value;
+  const password = document.getElementById("signupPassword").value;
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      document.getElementById("signupMessage").textContent =
+        "Sign-up successful! Please log in.";
+    } else {
+      document.getElementById("signupMessage").textContent =
+        data.message || "Sign-up failed.";
+    }
+  } catch (error) {
+    console.error("Error during sign-up:", error);
+    document.getElementById("signupMessage").textContent =
+      "An error occurred. Please try again.";
+  }
+});
+
+*/
   
