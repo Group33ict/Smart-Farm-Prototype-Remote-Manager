@@ -6,6 +6,8 @@ from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies, unset_jwt_cookies
+from datetime import datetime
+import pytz
 
 
 app = Flask(__name__)
@@ -60,12 +62,18 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 
+def gmt7_now():
+    return datetime.now(pytz.timezone('Asia/Bangkok'))
+
+
 # Smart Farm Data Model
 class SmartFarmData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     parameter = db.Column(db.String(50), nullable=False, unique=True)
     unit = db.Column(db.String(20), nullable=False)
     value = db.Column(db.String(50), nullable=True)
+    updated_time = db.Column(db.DateTime, default=gmt7_now, onupdate=gmt7_now)
+
 
 
 # Set up database function
@@ -77,7 +85,6 @@ def setup_database():
             initial_data = [
                 {"parameter": "temperature", "unit": "degree Celsius", "value": None},
                 {"parameter": "humidity", "unit": "percent", "value": None},
-                {"parameter": "soil_pH", "unit": "pH", "value": None},
                 {"parameter": "co2_concentration", "unit": "ppm", "value": None},
                 {"parameter": "light_intensity", "unit": "lux", "value": None},
             ]
