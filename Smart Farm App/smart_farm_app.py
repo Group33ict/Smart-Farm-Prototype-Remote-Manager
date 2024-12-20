@@ -291,10 +291,10 @@ def update_light_intensity():
 
 
 # Serve static file function
-@app.route('/statics/iot/templates/<path:path>')
+@app.route('/static/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
-    return send_from_directory('./statics/iot/templates', path)
+    return send_from_directory('./static/iot/templates', path)
 
 
 

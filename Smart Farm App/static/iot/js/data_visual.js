@@ -1,3 +1,4 @@
+/* 
 const sampleData = {
   temperature: {
     labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00'],
@@ -153,8 +154,12 @@ function hideNotification() {
   const notificationCount = document.getElementById('notification-count');
   notificationCount.style.display = 'none'; // Ẩn số thông báo
 }
+*/
 
-/*
+
+
+
+
 // Fetch data from the server
 async function fetchData(type) {
   try {
@@ -303,4 +308,3 @@ function hideNotification() {
   notificationCount.style.display = 'none'; // Hide notification count
 }
 
-*/
