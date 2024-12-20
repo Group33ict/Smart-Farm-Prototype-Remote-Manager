@@ -5,7 +5,7 @@ let dataChart = null; // Store Chart.js instance
 
 /**
  * Fetch data from the server and update the display.
- * @param {string} parameter - The type of data to fetch (e.g., 'temperature', 'humidity').
+ * @param {string} parameter - The type of data to fetch (e.g., 'temperature', 'humidity', 'co2_concentration', 'light_intensity').
  */
 async function fetchData(parameter) {
   try {
@@ -56,11 +56,19 @@ function updateDisplay(parameter, selectedData) {
     return;
   }
 
-  const threshold = 30; // Replace with the actual threshold value for alerts
+  // Define thresholds for each parameter
+  const thresholds = {
+    temperature: 30, // Example threshold for temperature (°C)
+    humidity: 70, // Example threshold for humidity (%)
+    co2_concentration: 1000, // Threshold for CO2 (ppm)
+    light_intensity: 500, // Threshold for light intensity (lux)
+  };
+
+  const threshold = thresholds[parameter] || 30; // Default threshold if not defined
 
   // Update the current stats display
   currentStatsElement.innerHTML = `
-    Current ${parameter.charAt(0).toUpperCase() + parameter.slice(1)}: 
+    Current ${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")}: 
     ${selectedData.value} ${selectedData.unit}
   `;
 
@@ -81,7 +89,7 @@ function updateDisplay(parameter, selectedData) {
   // Show alert if the value exceeds the threshold
   if (selectedData.value > threshold) {
     alertMessageElement.textContent = 
-      `Warning: ${parameter.charAt(0).toUpperCase() + parameter.slice(1)} exceeded safe threshold!`;
+      `Warning: ${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} exceeded safe threshold!`;
   }
 
   // Update the chart
@@ -104,7 +112,14 @@ function updateChart(parameter, selectedData) {
   const fakeLabels = ["10:00", "10:05", "10:10"]; // Example timestamps
   const fakeData = [25, 27, parseFloat(selectedData.value)]; // Example values
 
-  const threshold = 30; // Replace with actual threshold
+  const thresholds = {
+    temperature: 30,
+    humidity: 70,
+    co2_concentration: 1000,
+    light_intensity: 500,
+  };
+
+  const threshold = thresholds[parameter] || 30; // Default threshold if not defined
 
   dataChart = new Chart(ctx, {
     type: "line",
@@ -112,7 +127,7 @@ function updateChart(parameter, selectedData) {
       labels: fakeLabels,
       datasets: [
         {
-          label: `${parameter.charAt(0).toUpperCase() + parameter.slice(1)} (${selectedData.unit})`,
+          label: `${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} (${selectedData.unit})`,
           data: fakeData,
           borderColor: "rgba(0, 123, 255, 1)",
           backgroundColor: "rgba(0, 123, 255, 0.2)",
@@ -153,7 +168,7 @@ function updateChart(parameter, selectedData) {
           beginAtZero: true,
           title: {
             display: true,
-            text: `${parameter.charAt(0).toUpperCase() + parameter.slice(1)} (${selectedData.unit})`,
+            text: `${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} (${selectedData.unit})`,
           },
         },
       },
@@ -169,29 +184,10 @@ function showData(parameter) {
   fetchData(parameter);
 }
 
-// Functions for interactive controls
-function adjustTemperature(delta) {
-  alert("Adjusting temperature is a manual feature in this version.");
-}
-
-function toggleLight() {
-  alert("Toggling light...");
-}
-
-function adjustFan() {
-  alert("Adjusting fan settings...");
-}
-
-function waterPlant() {
-  alert("Watering plant...");
-}
-
-// Hide notifications
-function hideNotification() {
-  document.getElementById("notification-count").style.display = "none";
-}
-
-// Initialize with temperature data
+// Initialize with temperature data and others on page load
 window.onload = function () {
-  showData("temperature"); // Default fetch for temperature on page load
+  showData("temperature");
+  showData("humidity");
+  showData("co2_concentration");
+  showData("light_intensity");
 };

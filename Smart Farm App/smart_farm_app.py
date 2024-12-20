@@ -97,8 +97,6 @@ def setup_database():
                 {"parameter": "humidity", "unit": "percent", "value": None},
                 {"parameter": "co2_concentration", "unit": "ppm", "value": None},
                 {"parameter": "light_intensity", "unit": "lux", "value": None},
-                {"parameter": "color", "unit": "hex_value", "value": None},
-
             ]
             for item in initial_data:
                 new_entry = SmartFarmData(**item)
@@ -326,7 +324,7 @@ def update_light_intensity():
 
 @app.route('/update_color', methods=['POST'])
 @jwt_required()
-def update_color():
+def update_light_intensity():
     return update_parameter('color')
 
 
