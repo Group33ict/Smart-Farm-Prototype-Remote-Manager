@@ -8,9 +8,11 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies, unset_jwt_cookies
 from datetime import datetime
 import pytz
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app)
 
 
 # Unified Database Configuration
@@ -238,7 +240,7 @@ def logout():
 # Smart Farm Data API Routes
 
 @app.route('/data_retrieval', methods=['GET'])
-@jwt_required()  # Protect this route with JWT authentication
+# @jwt_required()  # Protect this route with JWT authentication
 def data_retrieval():
     # Retrieve all Smart Farm data from the database
     all_data = SmartFarmData.query.all()

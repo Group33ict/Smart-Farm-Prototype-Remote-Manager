@@ -1,310 +1,197 @@
-/* 
-const sampleData = {
-  temperature: {
-    labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00'],
-    data: [20, 21, 22, 25, 24, 23],
-    unit: '°C',
-    threshold: 23 // Threshold for temperature
-  },
-  humidity: {
-    labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00'],
-    data: [55, 50, 53, 60, 58, 54],
-    unit: '%',
-    threshold: 60 // Threshold for humidity
-  },
-  co2: {
-    labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00'],
-    data: [400, 420, 430, 440, 450, 455],
-    unit: 'ppm',
-    threshold: 450 // Threshold for CO2
-  },
-  light: {
-    labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00'],
-    data: [200, 250, 300, 400, 350, 300],
-    unit: 'lx',
-    threshold: 350 // Threshold for light
-  }
-};
+// Define base URL for the backend API
+const API_BASE_URL = "http://127.0.0.1:5000"; // Replace with your backend URL
 
-let dataChart;
+let dataChart = null; // Store Chart.js instance
 
-function showData(type) {
-  const selectedData = sampleData[type];
-  const threshold = selectedData.threshold;
-
-  // Update current stats display
-  document.getElementById("current-stats").innerHTML = 
-    `Current Plant Stats: Temperature: ${selectedData.data[selectedData.data.length - 1]} ${selectedData.unit}, 
-     Humidity: ${sampleData.humidity.data[sampleData.humidity.data.length - 1]} %, 
-     Light: ${sampleData.light.data[sampleData.light.data.length - 1]} lx, 
-     CO₂: ${sampleData.co2.data[sampleData.co2.data.length - 1]} ppm`;
-
-  document.getElementById("alert-message").textContent = "";
-
-  const tableBody = document.getElementById("data-table-body");
-  tableBody.innerHTML = ""; // Clear previous table data
-  selectedData.data.forEach((value, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${selectedData.labels[index]}</td>
-      <td class="${value > threshold ? 'table-danger' : ''}">${value} ${selectedData.unit}</td>
-    `;
-    tableBody.appendChild(row);
-
-    if (value > threshold) {
-      document.getElementById("alert-message").textContent = 
-        `Warning: ${type.charAt(0).toUpperCase() + type.slice(1)} exceeded safe threshold!`;
-    }
-  });
-
-  if (dataChart) {
-    dataChart.destroy(); // Destroy existing chart
-  }
-
-  const ctx = document.getElementById("dataChart").getContext("2d");
-
-  dataChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: selectedData.labels,
-      datasets: [
-        {
-          label: `${type.charAt(0).toUpperCase() + type.slice(1)} (${selectedData.unit})`,
-          data: selectedData.data,
-          borderColor: 'rgba(0, 0, 0, 0.1)',
-          borderWidth: 1,
-          segment: {
-            backgroundColor: ctx => ctx.p1.parsed.y > threshold ? 'rgba(255, 99, 132, 0.5)' : 'rgba(54, 162, 235, 0.5)',
-          },
-          fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true },
-        annotation: {
-          annotations: [{
-            type: 'line',
-            yMin: threshold,
-            yMax: threshold,
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 2,
-            label: {
-              enabled: true,
-              content: 'Threshold',
-              color: 'rgba(255, 99, 132, 1)',
-              position: 'start'
-            }
-          }]
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: `${type.charAt(0).toUpperCase() + type.slice(1)} (${selectedData.unit})`
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Time'
-          }
-        }
-      }
-    }
-  });
-}
-
-// Adjust temperature function
-function adjustTemperature(delta) {
-  const currentTemp = sampleData.temperature.data[sampleData.temperature.data.length - 1];
-  const newTemp = currentTemp + delta;
-  sampleData.temperature.data.push(newTemp); // Update data
-  sampleData.temperature.labels.push(`Next Hour`); // Simulate new time label
-  showData('temperature'); // Refresh data display
-}
-
-// Toggle light function
-function toggleLight() {
-  alert("Toggling light...");
-}
-
-// Adjust fan function
-function adjustFan() {
-  alert("Adjusting fan settings...");
-}
-
-// Water plant function
-function waterPlant() {
-  alert("Watering plant...");
-}
-
-// Initialize with temperature data
-window.onload = function() {
-  showData('temperature');
-};
-
-function hideNotification() {
-  const notificationCount = document.getElementById('notification-count');
-  notificationCount.style.display = 'none'; // Ẩn số thông báo
-}
-*/
-
-
-
-
-
-// Fetch data from the server
-async function fetchData(type) {
+/**
+ * Fetch data from the server and update the display.
+ * @param {string} parameter - The type of data to fetch (e.g., 'temperature', 'humidity').
+ */
+async function fetchData(parameter) {
   try {
-    const response = await fetch(`http://127.0.0.1:5000/data_retrieval?parameter=${type}`, {
-      method: 'GET',
+    const response = await fetch(`${API_BASE_URL}/data_retrieval?parameter=${parameter}`, {
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}` // JWT token
-      }
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("access_token")}`, // Optional JWT Token
+      },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch data');
+      throw new Error(`Failed to fetch data: ${response.statusText}`);
     }
 
     const serverData = await response.json();
-    const selectedData = serverData.data; // Assuming response contains data in { data: {...} } format
 
-    updateDisplay(type, selectedData);
+    // Extract the specific parameter data
+    const selectedData = serverData.data.find(item => item.parameter === parameter);
+
+    if (selectedData) {
+      updateDisplay(parameter, selectedData);
+    } else {
+      alert(`No data available for ${parameter}.`);
+      updateDisplay(parameter, null); // Clear UI
+    }
   } catch (error) {
-    console.error('Error fetching data:', error);
-    alert('Failed to fetch data. Please try again later.');
+    console.error("Error fetching data:", error);
+    alert("Failed to fetch data. Please try again later.");
   }
 }
 
-// Update display with fetched data
-function updateDisplay(type, selectedData) {
-  const threshold = selectedData.threshold;
-
-  // Update current stats display
-  document.getElementById("current-stats").innerHTML = 
-    `Current Plant Stats: Temperature: ${selectedData.data[selectedData.data.length - 1]} ${selectedData.unit}, 
-     Humidity: ${selectedData.humidity?.[selectedData.humidity.length - 1] || 'N/A'} %, 
-     Light: ${selectedData.light?.[selectedData.light.length - 1] || 'N/A'} lx, 
-     CO₂: ${selectedData.co2?.[selectedData.co2.length - 1] || 'N/A'} ppm`;
-
-  document.getElementById("alert-message").textContent = "";
-
+/**
+ * Update the UI with fetched data.
+ * @param {string} parameter - The parameter type (e.g., 'temperature').
+ * @param {Object|null} selectedData - Data object for the parameter or null to clear UI.
+ */
+function updateDisplay(parameter, selectedData) {
+  const currentStatsElement = document.getElementById("current-stats");
   const tableBody = document.getElementById("data-table-body");
-  tableBody.innerHTML = ""; // Clear previous table data
-  selectedData.data.forEach((value, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${selectedData.labels[index]}</td>
-      <td class="${value > threshold ? 'table-danger' : ''}">${value} ${selectedData.unit}</td>
-    `;
-    tableBody.appendChild(row);
+  const alertMessageElement = document.getElementById("alert-message");
 
-    if (value > threshold) {
-      document.getElementById("alert-message").textContent = 
-        `Warning: ${type.charAt(0).toUpperCase() + type.slice(1)} exceeded safe threshold!`;
-    }
-  });
-
-  if (dataChart) {
-    dataChart.destroy(); // Destroy existing chart
+  if (!selectedData) {
+    currentStatsElement.textContent = `No data available for ${parameter}.`;
+    tableBody.innerHTML = "";
+    alertMessageElement.textContent = "";
+    if (dataChart) dataChart.destroy(); // Clear the chart if it exists
+    return;
   }
 
+  const threshold = 30; // Replace with the actual threshold value for alerts
+
+  // Update the current stats display
+  currentStatsElement.innerHTML = `
+    Current ${parameter.charAt(0).toUpperCase() + parameter.slice(1)}: 
+    ${selectedData.value} ${selectedData.unit}
+  `;
+
+  // Clear any existing alert message
+  alertMessageElement.textContent = "";
+
+  // Populate the data table (only latest data for now)
+  tableBody.innerHTML = ""; // Clear existing data
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${new Date().toLocaleString()}</td>
+    <td class="${selectedData.value > threshold ? "table-danger" : ""}">
+      ${selectedData.value} ${selectedData.unit}
+    </td>
+  `;
+  tableBody.appendChild(row);
+
+  // Show alert if the value exceeds the threshold
+  if (selectedData.value > threshold) {
+    alertMessageElement.textContent = 
+      `Warning: ${parameter.charAt(0).toUpperCase() + parameter.slice(1)} exceeded safe threshold!`;
+  }
+
+  // Update the chart
+  updateChart(parameter, selectedData);
+}
+
+/**
+ * Create or update the Chart.js chart.
+ * @param {string} parameter - The parameter type (e.g., 'temperature').
+ * @param {Object} selectedData - Data object for the parameter.
+ */
+function updateChart(parameter, selectedData) {
   const ctx = document.getElementById("dataChart").getContext("2d");
 
+  if (dataChart) {
+    dataChart.destroy(); // Destroy the previous chart instance
+  }
+
+  // Generate fake labels and data if historical data is unavailable
+  const fakeLabels = ["10:00", "10:05", "10:10"]; // Example timestamps
+  const fakeData = [25, 27, parseFloat(selectedData.value)]; // Example values
+
+  const threshold = 30; // Replace with actual threshold
+
   dataChart = new Chart(ctx, {
-    type: 'line',
+    type: "line",
     data: {
-      labels: selectedData.labels,
+      labels: fakeLabels,
       datasets: [
         {
-          label: `${type.charAt(0).toUpperCase() + type.slice(1)} (${selectedData.unit})`,
-          data: selectedData.data,
-          borderColor: 'rgba(0, 0, 0, 0.1)',
-          borderWidth: 1,
-          segment: {
-            backgroundColor: ctx => ctx.p1.parsed.y > threshold ? 'rgba(255, 99, 132, 0.5)' : 'rgba(54, 162, 235, 0.5)',
-          },
+          label: `${parameter.charAt(0).toUpperCase() + parameter.slice(1)} (${selectedData.unit})`,
+          data: fakeData,
+          borderColor: "rgba(0, 123, 255, 1)",
+          backgroundColor: "rgba(0, 123, 255, 0.2)",
           fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      ]
+          borderWidth: 2,
+        },
+      ],
     },
     options: {
       responsive: true,
       plugins: {
         legend: { display: true },
         annotation: {
-          annotations: [{
-            type: 'line',
-            yMin: threshold,
-            yMax: threshold,
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 2,
-            label: {
-              enabled: true,
-              content: 'Threshold',
-              color: 'rgba(255, 99, 132, 1)',
-              position: 'start'
-            }
-          }]
-        }
+          annotations: [
+            {
+              type: "line",
+              yMin: threshold,
+              yMax: threshold,
+              borderColor: "rgba(255, 99, 132, 1)",
+              borderWidth: 2,
+              label: {
+                display: true,
+                content: "Threshold",
+                position: "end",
+              },
+            },
+          ],
+        },
       },
       scales: {
+        x: {
+          title: {
+            display: true,
+            text: "Time",
+          },
+        },
         y: {
           beginAtZero: true,
           title: {
             display: true,
-            text: `${type.charAt(0).toUpperCase() + type.slice(1)} (${selectedData.unit})`
-          }
+            text: `${parameter.charAt(0).toUpperCase() + parameter.slice(1)} (${selectedData.unit})`,
+          },
         },
-        x: {
-          title: {
-            display: true,
-            text: 'Time'
-          }
-        }
-      }
-    }
+      },
+    },
   });
 }
 
-// Adjust temperature function
-function adjustTemperature(delta) {
-  alert('Adjusting temperature is a manual feature in this version.');
+/**
+ * Show data for a specific parameter by calling fetchData.
+ * @param {string} parameter - The type of data to display (e.g., 'temperature', 'humidity').
+ */
+function showData(parameter) {
+  fetchData(parameter);
 }
 
-// Toggle light function
+// Functions for interactive controls
+function adjustTemperature(delta) {
+  alert("Adjusting temperature is a manual feature in this version.");
+}
+
 function toggleLight() {
   alert("Toggling light...");
 }
 
-// Adjust fan function
 function adjustFan() {
   alert("Adjusting fan settings...");
 }
 
-// Water plant function
 function waterPlant() {
   alert("Watering plant...");
 }
 
-// Initialize with temperature data
-window.onload = function() {
-  fetchData('temperature'); // Fetch and display temperature data initially
-};
-
+// Hide notifications
 function hideNotification() {
-  const notificationCount = document.getElementById('notification-count');
-  notificationCount.style.display = 'none'; // Hide notification count
+  document.getElementById("notification-count").style.display = "none";
 }
 
+// Initialize with temperature data
+window.onload = function () {
+  showData("temperature"); // Default fetch for temperature on page load
+};
