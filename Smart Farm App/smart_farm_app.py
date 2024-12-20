@@ -325,7 +325,7 @@ def update_light_intensity():
 
 @app.route('/update_color', methods=['POST'])
 @jwt_required()
-def update_light_intensity():
+def update_color():
     return update_parameter('color')
 
 
