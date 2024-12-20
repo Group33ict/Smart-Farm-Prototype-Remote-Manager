@@ -265,7 +265,7 @@ def logout():
 # Smart Farm Data API Routes
 
 @app.route('/data_retrieval', methods=['GET'])
-@jwt_required()  # Protect this route with JWT authentication
+# @jwt_required()  # Protect this route with JWT authentication
 def data_retrieval():
     # Retrieve all Smart Farm data from the database
     all_data = SmartFarmData.query.all()
