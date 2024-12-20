@@ -77,12 +77,20 @@ class SmartFarmData(db.Model):
     updated_time = db.Column(db.DateTime, default=gmt7_now, onupdate=gmt7_now)
 
 
+# Plant Data Model
+class PlantData(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    parameter = db.Column(db.String(50), nullable=False, unique=True)
+    unit = db.Column(db.String(20), nullable=True)
+    value = db.Column(db.String(50), nullable=True)
+
 
 # Set up database function
 def setup_database():
     """Initializes the database and populates default values if the table is empty."""
     with app.app_context():
         db.create_all()
+        # Initialize Smart Farm Data
         if SmartFarmData.query.count() == 0:
             initial_data = [
                 {"parameter": "temperature", "unit": "degree Celsius", "value": None},
@@ -94,6 +102,23 @@ def setup_database():
                 new_entry = SmartFarmData(**item)
                 db.session.add(new_entry)
             db.session.commit()
+            
+        # Initialize Plant Data
+        if PlantData.query.count() == 0:
+            initial_data = [
+                {"parameter": "name", "unit": None, "value": None},
+                {"parameter": "species", "unit": None, "value": None},
+                {"parameter": "category", "unit": None, "value": None},
+                {"parameter": "optimal_temperature", "unit": "degree Celsius", "value": None},
+                {"parameter": "optimal_humidity", "unit": "percent", "value": None},
+                {"parameter": "optimal_co2_concentration", "unit": "ppm", "value": None},
+                {"parameter": "optimal_light_intensity", "unit": "lux", "value": None},
+            ]
+            for item in initial_data:
+                new_entry = PlantData(**item)
+                db.session.add(new_entry)
+            db.session.commit()    
+        
 
 
 # Control the Smart Farm prototype function
