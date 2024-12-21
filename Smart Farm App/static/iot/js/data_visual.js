@@ -9,6 +9,8 @@ let dataChart = null; // Store Chart.js instance
  */
 async function fetchData(parameter) {
   try {
+    console.log(`Fetching data for parameter: ${parameter}`);
+
     const response = await fetch(`${API_BASE_URL}/data_retrieval?parameter=${parameter}`, {
       method: "GET",
       headers: {
@@ -23,8 +25,11 @@ async function fetchData(parameter) {
 
     const serverData = await response.json();
 
+    console.log(`Received data from server:`, serverData);
+
     // Extract the specific parameter data
     const selectedData = serverData.data.find(item => item.parameter === parameter);
+    console.log(`Selected data for ${parameter}:`, selectedData);
 
     if (selectedData) {
       updateDisplay(parameter, selectedData);
@@ -108,9 +113,13 @@ function updateChart(parameter, selectedData) {
     dataChart.destroy(); // Destroy the previous chart instance
   }
 
-  // Generate fake labels and data if historical data is unavailable
-  const fakeLabels = ["10:00", "10:05", "10:10"]; // Example timestamps
-  const fakeData = [25, 27, parseFloat(selectedData.value)]; // Example values
+  // Retrieve historical data from API response (if available)
+  const historicalData = selectedData.history || []; // Assuming `history` contains an array of past values
+
+  console.log(`Historical data for ${parameter}:`, historicalData);
+
+  const labels = historicalData.map(item => item.timestamp); // Time labels
+  const data = historicalData.map(item => item.value); // Data values
 
   const thresholds = {
     temperature: 30,
@@ -124,11 +133,11 @@ function updateChart(parameter, selectedData) {
   dataChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: fakeLabels,
+      labels: labels,
       datasets: [
         {
           label: `${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} (${selectedData.unit})`,
-          data: fakeData,
+          data: data,
           borderColor: "rgba(0, 123, 255, 1)",
           backgroundColor: "rgba(0, 123, 255, 0.2)",
           fill: true,
@@ -159,10 +168,7 @@ function updateChart(parameter, selectedData) {
       },
       scales: {
         x: {
-          title: {
-            display: true,
-            text: "Time",
-          },
+          title: { display: true, text: "Time" },
         },
         y: {
           beginAtZero: true,
@@ -181,6 +187,7 @@ function updateChart(parameter, selectedData) {
  * @param {string} parameter - The type of data to display (e.g., 'temperature', 'humidity').
  */
 function showData(parameter) {
+  console.log(`Showing data for: ${parameter}`);
   fetchData(parameter);
 }
 
