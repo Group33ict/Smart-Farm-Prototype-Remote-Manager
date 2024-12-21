@@ -25,7 +25,7 @@ textlcd = pop.Textlcd()
 textlcd.print(my_ip)
 
 ADAFRUIT_AIO_USERNAME = "SmartFarmUSTH"
-ADAFRUIT_AIO_KEY      = "aio_owGJ81lMRx8Qt3JVYjZC6dSbLaxE"
+ADAFRUIT_AIO_KEY      = ""
 
 OUT_CHANNEL = "SmartFarmUSTH/feeds/sfout"
 IN_CHANNEL = "SmartFarmUSTH/feeds/sfinp"
