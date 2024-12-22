@@ -98,39 +98,54 @@ def setup_database():
         db.create_all()   
         
 
-
-# Control the Smart Farm prototype function
-def update_parameter(parameter_name):
-    # Query the database, check if the parameter is existed or not
-    data_entry = SmartFarmData.query.filter_by(parameter=parameter_name).first()
-    
-    # If not existed
-    if not data_entry:
-        return jsonify({
+# Control single parameter in Smart Farm function
+def update_parameter(parameter_name, value):
+    """Update a specific parameter and insert a new row."""
+    # Check if the parameter is valid
+    valid_parameters = {"temperature", "humidity", "co2", "light_intensity", "color"}
+    if parameter_name not in valid_parameters:
+        return {
             "status": "error",
-            "message": f"Parameter '{parameter_name}' not found."
-        }), 404
+            "message": f"Invalid parameter: {parameter_name}. Valid parameters are: {', '.join(valid_parameters)}."
+        }, 400
 
-    #If existed, POST a JSON file to update the data of that paremeter
-    incoming_data = request.get_json()
-    if 'value' not in incoming_data:
-        return jsonify({
+    # Retrieve the latest record
+    latest_entry = SmartFarmData.query.order_by(SmartFarmData.updated_time.desc()).first()
+
+    # If no records exist, return an error
+    if not latest_entry:
+        return {
             "status": "error",
-            "message": "No value provided in the request."
-        }), 400
+            "message": "No data available to update. Please initialize the database first."
+        }, 400
 
-    data_entry.value = incoming_data['value']
+    # Create a new row with updated parameter
+    new_entry = SmartFarmData(
+        temperature=latest_entry.temperature if parameter_name != "temperature" else value,
+        humidity=latest_entry.humidity if parameter_name != "humidity" else value,
+        co2=latest_entry.co2 if parameter_name != "co2" else value,
+        light_intensity=latest_entry.light_intensity if parameter_name != "light_intensity" else value,
+        color=latest_entry.color if parameter_name != "color" else value
+    )
+
+    db.session.add(new_entry)
     db.session.commit()
 
-    return jsonify({
+    # Prepare the response
+    response = {
         "status": "success",
-        "message": f"{parameter_name.replace('_', ' ').capitalize()} updated successfully.",
+        "message": f"Parameter '{parameter_name}' updated successfully.",
         "data": {
-            "parameter": data_entry.parameter,
-            "unit": data_entry.unit,
-            "value": data_entry.value
+            "updated_time": new_entry.updated_time,
+            "temperature": new_entry.temperature,
+            "humidity": new_entry.humidity,
+            "co2": new_entry.co2,
+            "light_intensity": new_entry.light_intensity,
+            "color": new_entry.color,
         }
-    }), 200
+    }
+    return response, 200
+
 
 
 
@@ -303,31 +318,88 @@ def data_simulation():
 @app.route('/update_temperature', methods=['POST'])
 @jwt_required()
 def update_temperature():
-    return update_parameter('temperature')
+    incoming_data = request.get_json()
+
+    # Ensure the temperature key is present in the request
+    if "temperature" not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'temperature' in request data."
+        }), 400
+
+    # Call the update_parameter function
+    parameter_name = "temperature"
+    value = incoming_data["temperature"]
+    response, status_code = update_parameter(parameter_name, value)
+    return jsonify(response), status_code
 
 
 @app.route('/update_humidity', methods=['POST'])
 @jwt_required()
 def update_humidity():
-    return update_parameter('humidity')
+    incoming_data = request.get_json()
+
+    if "humidity" not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'humidity' in request data."
+        }), 400
+
+    parameter_name = "humidity"
+    value = incoming_data["humidity"]
+    response, status_code = update_parameter(parameter_name, value)
+    return jsonify(response), status_code
 
 
 @app.route('/update_co2', methods=['POST'])
 @jwt_required()
 def update_co2():
-    return update_parameter('co2')
+    incoming_data = request.get_json()
+
+    if "co2" not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'co2' in request data."
+        }), 400
+
+    parameter_name = "co2"
+    value = incoming_data["co2"]
+    response, status_code = update_parameter(parameter_name, value)
+    return jsonify(response), status_code
 
 
 @app.route('/update_light_intensity', methods=['POST'])
 @jwt_required()
 def update_light_intensity():
-    return update_parameter('light_intensity')
+    incoming_data = request.get_json()
+
+    if "light_intensity" not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'light_intensity' in request data."
+        }), 400
+
+    parameter_name = "light_intensity"
+    value = incoming_data["light_intensity"]
+    response, status_code = update_parameter(parameter_name, value)
+    return jsonify(response), status_code
 
 
 @app.route('/update_color', methods=['POST'])
 @jwt_required()
 def update_color():
-    return update_parameter('color')
+    incoming_data = request.get_json()
+
+    if "color" not in incoming_data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'color' in request data."
+        }), 400
+
+    parameter_name = "color"
+    value = incoming_data["color"]
+    response, status_code = update_parameter(parameter_name, value)
+    return jsonify(response), status_code
 
 
 
