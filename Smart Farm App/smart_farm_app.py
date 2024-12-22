@@ -71,53 +71,31 @@ def gmt7_now():
 # Smart Farm Data Model
 class SmartFarmData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    parameter = db.Column(db.String(50), nullable=False, unique=True)
-    unit = db.Column(db.String(20), nullable=False)
-    value = db.Column(db.String(50), nullable=True)
-    updated_time = db.Column(db.DateTime, default=gmt7_now, onupdate=gmt7_now)
+    updated_time = db.Column(db.DateTime, default=gmt7_now)
+    temperature = db.Column(db.String(50), nullable=True)
+    humidity = db.Column(db.String(50), nullable=True)
+    co2 = db.Column(db.String(50), nullable=True)
+    light_intensity = db.Column(db.String(50), nullable=True)
+    color = db.Column(db.String(50), nullable=True)
 
 
 # Plant Data Model
 class PlantData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    parameter = db.Column(db.String(50), nullable=False, unique=True)
-    unit = db.Column(db.String(20), nullable=True)
-    value = db.Column(db.String(50), nullable=True)
+    name = db.Column(db.DateTime, default=gmt7_now)
+    species = db.Column(db.String(50), nullable=True)
+    optimal_temperature = db.Column(db.String(50), nullable=True)
+    optimal_humidity = db.Column(db.String(50), nullable=True)
+    optimal_co2 = db.Column(db.String(50), nullable=True)
+    optimal_light_intensity = db.Column(db.String(50), nullable=True)
+    optimal_color = db.Column(db.String(50), nullable=True)
 
 
 # Set up database function
 def setup_database():
-    """Initializes the database and populates default values if the table is empty."""
+    """Initializes the database."""
     with app.app_context():
-        db.create_all()
-        # Initialize Smart Farm Data
-        if SmartFarmData.query.count() == 0:
-            initial_data = [
-                {"parameter": "temperature", "unit": "degree Celsius", "value": None},
-                {"parameter": "humidity", "unit": "percent", "value": None},
-                {"parameter": "co2_concentration", "unit": "ppm", "value": None},
-                {"parameter": "light_intensity", "unit": "lux", "value": None},
-            ]
-            for item in initial_data:
-                new_entry = SmartFarmData(**item)
-                db.session.add(new_entry)
-            db.session.commit()
-            
-        # Initialize Plant Data
-        if PlantData.query.count() == 0:
-            initial_data = [
-                {"parameter": "name", "unit": None, "value": None},
-                {"parameter": "species", "unit": None, "value": None},
-                {"parameter": "category", "unit": None, "value": None},
-                {"parameter": "optimal_temperature", "unit": "degree Celsius", "value": None},
-                {"parameter": "optimal_humidity", "unit": "percent", "value": None},
-                {"parameter": "optimal_co2_concentration", "unit": "ppm", "value": None},
-                {"parameter": "optimal_light_intensity", "unit": "lux", "value": None},
-            ]
-            for item in initial_data:
-                new_entry = PlantData(**item)
-                db.session.add(new_entry)
-            db.session.commit()    
+        db.create_all()   
         
 
 
@@ -279,22 +257,45 @@ def data_retrieval():
 @app.route('/data_simulation', methods=['POST'])
 @jwt_required()
 def data_simulation():
-    # Update Smart Farm data based on input JSON
+    # Retrieve incoming data
     incoming_data = request.get_json()
-    for key, value in incoming_data.items():
-        # Find the corresponding entry in the database
-        data_entry = SmartFarmData.query.filter_by(parameter=key).first()
-        if data_entry:
-            # Update the value
-            data_entry.value = value
+
+    # Extract parameters
+    temperature = incoming_data.get("temperature")
+    humidity = incoming_data.get("humidity")
+    co2 = incoming_data.get("co2")
+    light_intensity = incoming_data.get("light_intensity")
+    color = incoming_data.get("color")
+
+    # Insert new row into the database
+    new_entry = SmartFarmData(
+        temperature=temperature,
+        humidity=humidity,
+        co2=co2,
+        light_intensity=light_intensity,
+        color=color
+    )
+    db.session.add(new_entry)
     db.session.commit()
 
-    # Retrieve updated data for response
-    updated_data = SmartFarmData.query.all()
+    # Retrieve all data for response
+    all_data = SmartFarmData.query.order_by(SmartFarmData.updated_time.desc()).all()
+    response_data = [
+        {
+            "updated_time": item.updated_time,
+            "temperature": item.temperature,
+            "humidity": item.humidity,
+            "co2": item.co2,
+            "light_intensity": item.light_intensity,
+            "color": item.color,
+        }
+        for item in all_data
+    ]
+
     response = {
         "status": "success",
-        "message": "Smart Farm data updated successfully!",
-        "data": [{"parameter": item.parameter, "unit": item.unit, "value": item.value} for item in updated_data]
+        "message": "Smart Farm data simulated successfully!",
+        "data": response_data
     }
     return jsonify(response)
 
@@ -311,10 +312,10 @@ def update_humidity():
     return update_parameter('humidity')
 
 
-@app.route('/update_co2_concentration', methods=['POST'])
+@app.route('/update_co2', methods=['POST'])
 @jwt_required()
-def update_co2_concentration():
-    return update_parameter('co2_concentration')
+def update_co2():
+    return update_parameter('co2')
 
 
 @app.route('/update_light_intensity', methods=['POST'])
