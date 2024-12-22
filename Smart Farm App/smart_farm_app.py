@@ -11,6 +11,7 @@ import pytz
 from flask_cors import CORS
 import json
 import os
+from Template import request_message as rq
 
 
 app = Flask(__name__)
@@ -149,6 +150,56 @@ def update_parameter(parameter_name, value):
     return response, 200
 
 
+# Send request messages to Message broker functions
+
+def request_wifi_change():
+    """Send a request message to the message broker to change Wi-Fi credentials, including the conf.json file contents."""
+    # Get the absolute path to the current script's directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    conf_file_path = os.path.join(script_dir, "conf.json")
+
+    # Check if the conf.json file exists
+    if not os.path.exists(conf_file_path):
+        return {
+            "status": "error",
+            "message": "conf.json file not found."
+        }, 404
+
+    # Read Wi-Fi credentials from the conf.json file
+    try:
+        with open(conf_file_path, "r") as conf_file:
+            wifi_credentials = json.load(conf_file)
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to read conf.json: {str(e)}"
+        }, 500
+
+    # Prepare the message for the message broker
+    msg = {
+        "action": "request_wifi_change",
+        "wifi_credentials": wifi_credentials  # Include the file's contents
+    }
+
+    # Send the message to the message broker
+    try:
+        rq.sf_send(topic="change_wifi", msg=msg)
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to send message to the message broker: {str(e)}"
+        }, 500
+
+    return {
+        "status": "success",
+        "message": "Wi-Fi change request sent successfully, including conf.json contents."
+    }, 200
+
+
+
+
+
+# Receive request messages from Message broker functions
 
 
 # JWT Authentication API routes
@@ -427,6 +478,17 @@ def update_color():
     parameter_name = "color"
     value = incoming_data["color"]
     response, status_code = update_parameter(parameter_name, value)
+    return jsonify(response), status_code
+
+
+
+# Message broker interactions API routes
+
+@app.route('/request_wifi_change', methods=['POST'])
+# @jwt_required()  # Uncomment to secure the route
+def request_wifi_change_api():
+    """API endpoint to request a Wi-Fi password change."""
+    response, status_code = request_wifi_change()
     return jsonify(response), status_code
 
 
