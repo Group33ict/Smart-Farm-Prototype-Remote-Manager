@@ -9,6 +9,8 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from datetime import datetime
 import pytz
 from flask_cors import CORS
+import json
+import os
 
 
 app = Flask(__name__)
@@ -258,14 +260,40 @@ def logout():
 # Smart Farm Data API Routes
 
 @app.route('/data_retrieval', methods=['GET'])
-# @jwt_required()  # Protect this route with JWT authentication
+@jwt_required() 
 def data_retrieval():
     # Retrieve all Smart Farm data from the database
-    all_data = SmartFarmData.query.all()
+    all_data = SmartFarmData.query.order_by(SmartFarmData.updated_time.desc()).all()
+    
+    # Prepare the response
     response = {
         "status": "success",
-        "data": [{"parameter": item.parameter, "unit": item.unit, "value": item.value} for item in all_data]
+        "data": [
+            {
+                "updated_time": item.updated_time.strftime("%Y-%m-%d %H:%M:%S") if item.updated_time else None,
+                "temperature": item.temperature,
+                "humidity": item.humidity,
+                "co2": item.co2,
+                "light_intensity": item.light_intensity,
+                "color": item.color,
+            } 
+            for item in all_data
+        ]
     }
+
+    # Define the file path for exporting
+    file_path = os.path.join(os.getcwd(), "smart_farm_data.json")
+
+    # Write the response data to the JSON file
+    try:
+        with open(file_path, "w") as json_file:
+            json.dump(response, json_file, indent=4)
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to write to file: {str(e)}"
+        }), 500
+    
     return jsonify(response)
 
 
