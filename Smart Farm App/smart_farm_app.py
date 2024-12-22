@@ -150,6 +150,7 @@ def update_parameter(parameter_name, value):
     return response, 200
 
 
+
 # Send request messages to Message broker functions
 
 def request_wifi_change():
@@ -197,9 +198,33 @@ def request_wifi_change():
 
 
 
-
-
 # Receive request messages from Message broker functions
+
+def request_wifi_info():
+    """Send a request to the message broker to retrieve current Wi-Fi information."""
+    # Request the Wi-Fi information from the broker
+    wifi_info = rq.sf_recv("wifi_info")  # Assuming the feed storing Wi-Fi data is called 'wifi_info'
+
+    # Check if the Wi-Fi data was received
+    if wifi_info:
+        # Print or process the Wi-Fi data
+        print(f"Current Wi-Fi Information: {wifi_info}")
+        
+        # Save to a JSON file
+        with open('current_wifi_info.json', 'w') as f:
+            json.dump(wifi_info, f, indent=4)
+        
+        return {
+            "status": "success",
+            "message": "Wi-Fi information retrieved successfully.",
+            "data": wifi_info
+        }
+    else:
+        return {
+            "status": "error",
+            "message": "Failed to retrieve Wi-Fi information."
+        }
+
 
 
 # JWT Authentication API routes
@@ -485,11 +510,18 @@ def update_color():
 # Message broker interactions API routes
 
 @app.route('/request_wifi_change', methods=['POST'])
-# @jwt_required()  # Uncomment to secure the route
+@jwt_required()  
 def request_wifi_change_api():
     """API endpoint to request a Wi-Fi password change."""
     response, status_code = request_wifi_change()
     return jsonify(response), status_code
+
+
+@app.route('/request_wifi_info', methods=['GET'])
+#@jwt_required()  
+def wifi_info():
+    response = request_wifi_info()
+    return jsonify(response)
 
 
 
