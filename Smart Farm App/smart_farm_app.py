@@ -184,7 +184,7 @@ def request_wifi_change():
 
     # Send the message to the message broker
     try:
-        rq.sf_send(topic="change_wifi", msg=msg)
+        rq.sf_send(topic="sfinp", msg=msg)
     except Exception as e:
         return {
             "status": "error",
@@ -195,6 +195,37 @@ def request_wifi_change():
         "status": "success",
         "message": "Wi-Fi change request sent successfully, including conf.json contents."
     }, 200
+
+
+def send_control_message_with_data():
+    # Retrieve the control_data.json file
+    try:
+        json_file_path = os.path.join(os.path.dirname(__file__), "control_data.json")
+        with open(json_file_path, "r") as json_file:
+            control_data = json.load(json_file)
+    except FileNotFoundError:
+        return {
+            "status": "error",
+            "message": "control_data.json file not found."
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to read control_data.json: {str(e)}"
+        }
+
+    # Send the control data to the message broker
+    try:
+        rq.sf_send("control_topic", control_data)
+        return {
+            "status": "success",
+            "message": "Control message sent successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to send control message: {str(e)}"
+        }
 
 
 
@@ -223,6 +254,56 @@ def request_wifi_info():
         return {
             "status": "error",
             "message": "Failed to retrieve Wi-Fi information."
+        }
+    
+
+def retrieve_and_save_smart_farm_data():
+    """Retrieve data from the message broker and save it to the database."""
+    try:
+        # Retrieve data from the broker
+        broker_data = rq.sf_recv("smart_farm_data")  # Assuming "smart_farm_data" is the broker topic/feed
+        
+        if not broker_data:
+            return {
+                "status": "error",
+                "message": "Failed to retrieve data from the message broker."
+            }
+        
+        # Parse the data (assuming it comes in JSON format)
+        data = json.loads(broker_data)
+        temperature = data.get("temperature")
+        humidity = data.get("humidity")
+        co2_concentration = data.get("co2_concentration")
+        light_intensity = data.get("light_intensity")
+        color = data.get("color")  # Optional: include any other relevant fields
+
+        # Add a new record to the database
+        new_entry = SmartFarmData(
+            temperature=temperature,
+            humidity=humidity,
+            co2_concentration=co2_concentration,
+            light_intensity=light_intensity,
+            color=color
+        )
+
+        db.session.add(new_entry)
+        db.session.commit()
+
+        return {
+            "status": "success",
+            "message": "Smart farm data retrieved and saved successfully.",
+            "data": {
+                "temperature": temperature,
+                "humidity": humidity,
+                "co2_concentration": co2_concentration,
+                "light_intensity": light_intensity,
+                "color": color
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"An error occurred: {str(e)}"
         }
 
 
@@ -335,7 +416,7 @@ def logout():
 
 # Smart Farm Data API Routes
 
-@app.route('/data_retrieval', methods=['GET'])
+@app.route('/data_retrieval', methods=['GET']) # Retrieve data from Database
 @jwt_required() 
 def data_retrieval():
     # Retrieve all Smart Farm data from the database
@@ -374,7 +455,7 @@ def data_retrieval():
 
 
 @app.route('/data_simulation', methods=['POST'])
-@jwt_required()
+# @jwt_required()
 def data_simulation():
     # Retrieve incoming data
     incoming_data = request.get_json()
@@ -401,7 +482,7 @@ def data_simulation():
     all_data = SmartFarmData.query.order_by(SmartFarmData.updated_time.desc()).all()
     response_data = [
         {
-            "updated_time": item.updated_time,
+            "updated_time": item.updated_time.isoformat() if item.updated_time else None,
             "temperature": item.temperature,
             "humidity": item.humidity,
             "co2": item.co2,
@@ -411,6 +492,16 @@ def data_simulation():
         for item in all_data
     ]
 
+    # Save the response_data to a JSON file
+    try:
+        with open("control_data.json", "w") as json_file:
+            json.dump(response_data, json_file, indent=4)
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to save data to JSON file: {str(e)}"
+        }), 500
+    
     response = {
         "status": "success",
         "message": "Smart Farm data simulated successfully!",
@@ -510,7 +601,7 @@ def update_color():
 # Message broker interactions API routes
 
 @app.route('/request_wifi_change', methods=['POST'])
-@jwt_required()  
+# @jwt_required()  
 def request_wifi_change_api():
     """API endpoint to request a Wi-Fi password change."""
     response, status_code = request_wifi_change()
@@ -518,11 +609,27 @@ def request_wifi_change_api():
 
 
 @app.route('/request_wifi_info', methods=['GET'])
-#@jwt_required()  
+# @jwt_required()  
 def wifi_info():
     response = request_wifi_info()
     return jsonify(response)
 
+
+@app.route('/retrieve_sensor_data', methods=['POST']) # Retrieve data from the sensors of the Smart Farm prototype
+# @jwt_required()  
+def retrieve_sensor_data():
+    """API endpoint to retrieve data from the message broker and save it to the database."""
+    response = retrieve_and_save_smart_farm_data()
+    return jsonify(response)
+
+
+@app.route('/send_control_message', methods=['POST'])
+# @jwt_required() 
+def send_control_message():
+    """API route to send a control message with smart farm data."""
+    # Call the function to send the message
+    response = send_control_message_with_data()
+    return jsonify(response)
 
 
 # Serve static file function
@@ -530,7 +637,6 @@ def wifi_info():
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./static/iot/templates', path)
-
 
 
 if __name__ == '__main__':
