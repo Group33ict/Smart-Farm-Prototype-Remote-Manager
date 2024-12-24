@@ -184,7 +184,7 @@ def request_wifi_change():
 
     # Send the message to the message broker
     try:
-        rq.sf_send(topic="sfinp", msg=msg)
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="wifi_change")
     except Exception as e:
         return {
             "status": "error",
@@ -216,7 +216,7 @@ def send_control_message_with_data():
 
     # Send the control data to the message broker
     try:
-        rq.sf_send("control_topic", control_data)
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="control_data")
         return {
             "status": "success",
             "message": "Control message sent successfully!"
@@ -234,7 +234,7 @@ def send_control_message_with_data():
 def request_wifi_info():
     """Send a request to the message broker to retrieve current Wi-Fi information."""
     # Request the Wi-Fi information from the broker
-    wifi_info = rq.sf_recv("wifi_info")  # Assuming the feed storing Wi-Fi data is called 'wifi_info'
+    wifi_info = rq.sf_recv(topic=rq.OUT_CHANNEL)  # Assuming the feed storing Wi-Fi data is called 'wifi_info'
 
     # Check if the Wi-Fi data was received
     if wifi_info:
@@ -261,7 +261,7 @@ def retrieve_and_save_smart_farm_data():
     """Retrieve data from the message broker and save it to the database."""
     try:
         # Retrieve data from the broker
-        broker_data = rq.sf_recv("smart_farm_data")  # Assuming "smart_farm_data" is the broker topic/feed
+        broker_data = rq.sf_recv(topic=rq.OUT_CHANNEL)  # Assuming "smart_farm_data" is the broker topic/feed
         
         if not broker_data:
             return {
