@@ -322,6 +322,7 @@ def update_co2_concentration():
 def update_light_intensity():
     return update_parameter('light_intensity')
 
+
 @app.route('/update_color', methods=['POST'])
 @jwt_required()
 def update_color():
