@@ -417,7 +417,7 @@ def logout():
 # Smart Farm Data API Routes
 
 @app.route('/data_retrieval', methods=['GET']) # Retrieve data from Database
-@jwt_required() 
+# @jwt_required() 
 def data_retrieval():
     # Retrieve all Smart Farm data from the database
     all_data = SmartFarmData.query.order_by(SmartFarmData.updated_time.desc()).all()

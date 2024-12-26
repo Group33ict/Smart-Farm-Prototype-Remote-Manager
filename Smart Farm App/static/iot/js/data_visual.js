@@ -4,14 +4,13 @@ const API_BASE_URL = "http://127.0.0.1:5000"; // Replace with your backend URL
 let dataChart = null; // Store Chart.js instance
 
 /**
- * Fetch data from the server and update the display.
- * @param {string} parameter - The type of data to fetch (e.g., 'temperature', 'humidity', 'co2_concentration', 'light_intensity').
+ * Fetch data from the server and update the display for all parameters.
  */
-async function fetchData(parameter) {
+async function fetchData() {
   try {
-    console.log(`Fetching data for parameter: ${parameter}`);
+    console.log("Fetching data from server...");
 
-    const response = await fetch(`${API_BASE_URL}/data_retrieval?parameter=${parameter}`, {
+    const response = await fetch(`${API_BASE_URL}/data_retrieval`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -24,18 +23,14 @@ async function fetchData(parameter) {
     }
 
     const serverData = await response.json();
+    console.log("Received data from server:", serverData);
 
-    console.log(`Received data from server:`, serverData);
-
-    // Extract the specific parameter data
-    const selectedData = serverData.data.find(item => item.parameter === parameter);
-    console.log(`Selected data for ${parameter}:`, selectedData);
-
-    if (selectedData) {
-      updateDisplay(parameter, selectedData);
+    // Check if data exists in the server response
+    if (serverData.data && Array.isArray(serverData.data)) {
+      updateDisplay(serverData.data);
     } else {
-      alert(`No data available for ${parameter}.`);
-      updateDisplay(parameter, null); // Clear UI
+      console.warn("Unexpected server response:", serverData);
+      alert("Invalid data format received from the server.");
     }
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -45,103 +40,104 @@ async function fetchData(parameter) {
 
 /**
  * Update the UI with fetched data.
- * @param {string} parameter - The parameter type (e.g., 'temperature').
- * @param {Object|null} selectedData - Data object for the parameter or null to clear UI.
+ * @param {Array} data - Array of data objects from the server.
  */
-function updateDisplay(parameter, selectedData) {
-  const currentStatsElement = document.getElementById("current-stats");
+function updateDisplay(data) {
   const tableBody = document.getElementById("data-table-body");
   const alertMessageElement = document.getElementById("alert-message");
 
-  if (!selectedData) {
-    currentStatsElement.textContent = `No data available for ${parameter}.`;
-    tableBody.innerHTML = "";
-    alertMessageElement.textContent = "";
-    if (dataChart) dataChart.destroy(); // Clear the chart if it exists
+  // Clear existing table content
+  tableBody.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    alertMessageElement.textContent = "No data available.";
     return;
   }
 
-  // Define thresholds for each parameter
+  // Define thresholds for alerts
   const thresholds = {
-    temperature: 30, // Example threshold for temperature (°C)
-    humidity: 70, // Example threshold for humidity (%)
-    co2_concentration: 1000, // Threshold for CO2 (ppm)
-    light_intensity: 500, // Threshold for light intensity (lux)
+    temperature: 30,
+    humidity: 70,
+    co2: 1000,
+    light_intensity: 500,
   };
 
-  const threshold = thresholds[parameter] || 30; // Default threshold if not defined
+  // Populate the table with new data
+  data.forEach((row) => {
+    const tableRow = document.createElement("tr");
 
-  // Update the current stats display
-  currentStatsElement.innerHTML = `
-    Current ${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")}: 
-    ${selectedData.value} ${selectedData.unit}
-  `;
+    tableRow.innerHTML = `
+      <td>${row.updated_time || "N/A"}</td>
+      <td class="${row.temperature > thresholds.temperature ? "table-danger" : ""}">${row.temperature} °C</td>
+      <td class="${row.humidity > thresholds.humidity ? "table-danger" : ""}">${row.humidity} %</td>
+      <td class="${row.co2 > thresholds.co2 ? "table-danger" : ""}">${row.co2} ppm</td>
+      <td class="${row.light_intensity > thresholds.light_intensity ? "table-danger" : ""}">${row.light_intensity} lux</td>
+    `;
 
-  // Clear any existing alert message
-  alertMessageElement.textContent = "";
+    tableBody.appendChild(tableRow);
+  });
 
-  // Populate the data table (only latest data for now)
-  tableBody.innerHTML = ""; // Clear existing data
-  const row = document.createElement("tr");
-  row.innerHTML = `
-    <td>${new Date().toLocaleString()}</td>
-    <td class="${selectedData.value > threshold ? "table-danger" : ""}">
-      ${selectedData.value} ${selectedData.unit}
-    </td>
-  `;
-  tableBody.appendChild(row);
+  // Display alerts if necessary
+  const exceededParameters = [];
+  data.forEach((row) => {
+    if (row.temperature > thresholds.temperature) exceededParameters.push("Temperature");
+    if (row.humidity > thresholds.humidity) exceededParameters.push("Humidity");
+    if (row.co2 > thresholds.co2) exceededParameters.push("CO₂");
+    if (row.light_intensity > thresholds.light_intensity) exceededParameters.push("Light Intensity");
+  });
 
-  // Show alert if the value exceeds the threshold
-  if (selectedData.value > threshold) {
-    alertMessageElement.textContent = 
-      `Warning: ${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} exceeded safe threshold!`;
+  if (exceededParameters.length > 0) {
+    alertMessageElement.textContent = `Warning: ${exceededParameters.join(", ")} exceeded safe thresholds!`;
+  } else {
+    alertMessageElement.textContent = "";
   }
 
-  // Update the chart
-  updateChart(parameter, selectedData);
+  // Update the chart with the most recent data row
+  if (data.length > 0) {
+    updateChart(data[data.length - 1]);
+  }
 }
 
 /**
  * Create or update the Chart.js chart.
- * @param {string} parameter - The parameter type (e.g., 'temperature').
- * @param {Object} selectedData - Data object for the parameter.
+ * @param {Object} latestData - The most recent data object from the server.
  */
-function updateChart(parameter, selectedData) {
+function updateChart(latestData) {
   const ctx = document.getElementById("dataChart").getContext("2d");
 
   if (dataChart) {
     dataChart.destroy(); // Destroy the previous chart instance
   }
 
-  // Retrieve historical data from API response (if available)
-  const historicalData = selectedData.history || []; // Assuming `history` contains an array of past values
-
-  console.log(`Historical data for ${parameter}:`, historicalData);
-
-  const labels = historicalData.map(item => item.timestamp); // Time labels
-  const data = historicalData.map(item => item.value); // Data values
-
-  const thresholds = {
-    temperature: 30,
-    humidity: 70,
-    co2_concentration: 1000,
-    light_intensity: 500,
-  };
-
-  const threshold = thresholds[parameter] || 30; // Default threshold if not defined
+  const labels = ["Temperature", "Humidity", "CO₂", "Light Intensity"];
+  const data = [
+    latestData.temperature,
+    latestData.humidity,
+    latestData.co2,
+    latestData.light_intensity,
+  ];
 
   dataChart = new Chart(ctx, {
-    type: "line",
+    type: "bar",
     data: {
       labels: labels,
       datasets: [
         {
-          label: `${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} (${selectedData.unit})`,
+          label: "Latest Measurements",
           data: data,
-          borderColor: "rgba(0, 123, 255, 1)",
-          backgroundColor: "rgba(0, 123, 255, 0.2)",
-          fill: true,
-          borderWidth: 2,
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.2)",
+            "rgba(54, 162, 235, 0.2)",
+            "rgba(75, 192, 192, 0.2)",
+            "rgba(255, 206, 86, 0.2)",
+          ],
+          borderColor: [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(255, 206, 86, 1)",
+          ],
+          borderWidth: 1,
         },
       ],
     },
@@ -149,33 +145,10 @@ function updateChart(parameter, selectedData) {
       responsive: true,
       plugins: {
         legend: { display: true },
-        annotation: {
-          annotations: [
-            {
-              type: "line",
-              yMin: threshold,
-              yMax: threshold,
-              borderColor: "rgba(255, 99, 132, 1)",
-              borderWidth: 2,
-              label: {
-                display: true,
-                content: "Threshold",
-                position: "end",
-              },
-            },
-          ],
-        },
       },
       scales: {
-        x: {
-          title: { display: true, text: "Time" },
-        },
         y: {
           beginAtZero: true,
-          title: {
-            display: true,
-            text: `${parameter.charAt(0).toUpperCase() + parameter.slice(1).replace(/_/g, " ")} (${selectedData.unit})`,
-          },
         },
       },
     },
@@ -183,18 +156,8 @@ function updateChart(parameter, selectedData) {
 }
 
 /**
- * Show data for a specific parameter by calling fetchData.
- * @param {string} parameter - The type of data to display (e.g., 'temperature', 'humidity').
+ * Initialize the page by fetching data on load.
  */
-function showData(parameter) {
-  console.log(`Showing data for: ${parameter}`);
-  fetchData(parameter);
-}
-
-// Initialize with temperature data and others on page load
 window.onload = function () {
-  showData("temperature");
-  showData("humidity");
-  showData("co2_concentration");
-  showData("light_intensity");
+  fetchData();
 };
