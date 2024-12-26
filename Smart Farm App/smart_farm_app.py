@@ -178,13 +178,12 @@ def request_wifi_change():
 
     # Prepare the message for the message broker
     msg = {
-        "action": "request_wifi_change",
         "wifi_credentials": wifi_credentials  # Include the file's contents
     }
 
     # Send the message to the message broker
     try:
-        rq.sf_send(topic=rq.IN_CHANNEL, msg="wifi_change")
+        rq.sf_send(topic=rq.IN_CHANNEL, msg=msg)
     except Exception as e:
         return {
             "status": "error",
@@ -193,7 +192,8 @@ def request_wifi_change():
 
     return {
         "status": "success",
-        "message": "Wi-Fi change request sent successfully, including conf.json contents."
+        "message": "Wi-Fi change request sent successfully, including conf.json contents.",
+        "wifi_credentials": wifi_credentials
     }, 200
 
 
