@@ -123,26 +123,47 @@
 
     <div class="row mb-4">
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('temperature')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-temperature">
           <i class="fas fa-thermometer-half"></i> Temperature
         </button>
+        <div class="mt-2">
+          <label for="temp-threshold">Threshold:</label>
+          <input type="number" id="temp-threshold" class="form-control" value="30" />
+        </div>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('humidity')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-humidity">
           <i class="fas fa-tint"></i> Humidity
         </button>
+        <div class="mt-2">
+          <label for="humidity-threshold">Threshold:</label>
+          <input type="number" id="humidity-threshold" class="form-control" value="60" />
+        </div>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('co2_concentration')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-co2">
           <i class="fas fa-cloud"></i> CO₂ Level
         </button>
+        <div class="mt-2">
+          <label for="co2-threshold">Threshold:</label>
+          <input type="number" id="co2-threshold" class="form-control" value="1000" />
+        </div>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('light_intensity')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-light">
           <i class="fas fa-sun"></i> Light Intensity
         </button>
+        <div class="mt-2">
+          <label for="light-threshold">Threshold:</label>
+          <input type="number" id="light-threshold" class="form-control" value="500" />
+        </div>
       </div>
     </div>
+    
+    <!-- Display alert -->
+    <div id="alert-message" class="alert alert-warning" style="display: none;"></div>
+    
+    
 
     <!-- Display Data Section -->
     <div class="row">

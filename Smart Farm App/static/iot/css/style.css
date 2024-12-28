@@ -56,3 +56,9 @@ body {
   color: white;
   font-weight: bold;
 }
+
+/* Style for rows exceeding threshold */
+tr {
+  transition: background-color 0.3s ease;
+}
+
