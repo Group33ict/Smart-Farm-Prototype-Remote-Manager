@@ -228,6 +228,34 @@ def send_control_message_with_data():
         }
 
 
+def open_smart_farm_window():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="win_open")
+        return {
+            "status": "success",
+            "message": "Open window successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to open window: {str(e)}"
+        }
+
+
+def close_smart_farm_window():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="win_close")
+        return {
+            "status": "success",
+            "message": "Close window successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to close window: {str(e)}"
+        }
+    
+
 
 # Receive request messages from Message broker functions
 
@@ -642,15 +670,28 @@ def send_control_message():
     return jsonify(response)
 
 
+@app.route('/open_window', methods=['POST'])
+# @jwt_required()  
+def open_window():
+    status_code = open_smart_farm_window()
+    return status_code
+
+
+@app.route('/close_window', methods=['POST'])
+# @jwt_required()  
+def close_window():
+    status_code = close_smart_farm_window()
+    return  status_code
+
+
 # Serve static file function
 @app.route('/static/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./static/iot/templates', path)
 
-# rq.sf_send(topic=rq.IN_CHANNEL, msg="win_close")
+# rq.sf_send(topic=rq.IN_CHANNEL, msg="reqwifi")
 
-# rq.sf_send(topic=rq.IN_CHANNEL, msg="win_open")
 if __name__ == '__main__':
     setup_database()  # Initialize the database
     app.run(debug=True)
