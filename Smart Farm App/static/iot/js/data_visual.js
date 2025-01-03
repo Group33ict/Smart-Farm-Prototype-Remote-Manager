@@ -1,19 +1,19 @@
 // Define base URL for the backend API
-const API_BASE_URL = "http://127.0.0.1:5000"; // Replace with your backend URL
+const API_BASE_URL = "http://127.0.0.1:5000"; 
 
 let dataChart = null; // Store Chart.js instance
 let currentFilter = "temperature"; // Default filter
 
 // Default thresholds
 const thresholds = {
-  temperature: 30, // Default threshold for temperature
-  humidity: 60,    // Default threshold for humidity
-  co2: 1000,       // Default threshold for CO₂ level
-  light_intensity: 500 // Default threshold for light intensity
+  temperature: 30, 
+  humidity: 60,    
+  co2: 1000,     
+  light_intensity: 500 
 };
 
 /**
- * Fetch data from the server and update the display for the current filter.
+ * Fetch data from the server and update the display for the current filter
  */
 async function fetchData() {
   try {
@@ -83,20 +83,20 @@ function updateDisplay(data) {
 
     // Highlight row in red if value exceeds threshold
     if (exceedsThreshold(currentFilter, row.value)) {
-      tableRow.style.backgroundColor = "#ffcccc"; // Light red background
+      tableRow.style.backgroundColor = "#ffcccc"; 
     }
 
     tableBody.appendChild(tableRow);
   });
 
-  // Check the latest data value
+  // Check latest data value
   const latestData = filteredData[filteredData.length - 1];
   if (latestData && exceedsThreshold(currentFilter, latestData.value)) {
     alertMessageElement.textContent = `Warning: Latest ${currentFilter} value (${latestData.value}) exceeds the threshold of ${thresholds[currentFilter]}!`;
     alertMessageElement.style.display = "block";
   }
 
-  // Update the chart with the filtered data and threshold
+  // Update chart 
   updateChart(filteredData);
 }
 

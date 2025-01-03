@@ -119,7 +119,7 @@
         </ul>
       </div>
     </nav>
-
+  
   <div class="container my-4">
     <h2 class="text-center">Smart Farm Control Panel</h2>
     
@@ -198,22 +198,16 @@
         
         <!-- Control Buttons Section -->
         <div class="control-panel mt-4">
-          <h5>Adjust Settings</h5>
+          <h5>Control</h5>
           <div class="row">
             <div class="col-md-3">
-              <button class="btn btn-warning w-100" onclick="adjustTemperature(1)">Increase Temp</button>
+              <button class="btn btn-info w-100" onclick="toggleLight()">Open Window </button>
             </div>
             <div class="col-md-3">
-              <button class="btn btn-danger w-100" onclick="adjustTemperature(-1)">Decrease Temp</button>
+              <button class="btn btn-secondary w-100" onclick="adjustFan()">Close Window </button>
             </div>
             <div class="col-md-3">
-              <button class="btn btn-info w-100" onclick="toggleLight()">Toggle Light</button>
-            </div>
-            <div class="col-md-3">
-              <button class="btn btn-secondary w-100" onclick="adjustFan()">Adjust Fan</button>
-            </div>
-            <div class="col-md-3">
-              <button class="btn btn-success w-100" onclick="waterPlant()">Water Plant</button>
+              <button class="btn btn-secondary w-100" onclick="adjustFan()">OnlyFan </button>
             </div>
           </div>
         </div>
