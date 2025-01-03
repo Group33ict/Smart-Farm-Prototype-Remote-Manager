@@ -51,6 +51,15 @@
                         <li><a class="dropdown-item" href="#">Something else here</a></li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown"> 
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fas fa-wifi"></i> WiFi
+                  </a>
+                  <ul class="dropdown-menu" id="wifi-list">
+                      <!-- Show WiFi here-->
+                      <li><a class="dropdown-item" href="#">Scanning...</a></li>
+                  </ul>
+                </li> 
                 <li class="nav-item">
                     <a class="nav-link" href="#" id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false" onclick="hideNotification()">
                         <i class="fas fa-bell"></i>
@@ -75,7 +84,7 @@
   <div class="d-flex">
     <!-- Sidebar -->
     <nav class="d-flex flex-column bg-dark p-3 text-white" style="width: 150px; height: 100vh;">
-      <h3 class="mb-4">Home</h3>
+      
       <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
           <a href="dashboard.html" class="nav-link text-white active">
@@ -110,7 +119,7 @@
         </ul>
       </div>
     </nav>
-
+  
   <div class="container my-4">
     <h2 class="text-center">Smart Farm Control Panel</h2>
     
@@ -123,26 +132,47 @@
 
     <div class="row mb-4">
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('temperature')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-temperature">
           <i class="fas fa-thermometer-half"></i> Temperature
         </button>
+        <div class="mt-2">
+          <label for="temp-threshold">Threshold:</label>
+          <input type="number" id="temp-threshold" class="form-control" value="30" />
+        </div>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('humidity')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-humidity">
           <i class="fas fa-tint"></i> Humidity
         </button>
+        <div class="mt-2">
+          <label for="humidity-threshold">Threshold:</label>
+          <input type="number" id="humidity-threshold" class="form-control" value="60" />
+        </div>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('co2')">
-          <i class="fas fa-cloud"></i> CO₂ Level
+        <button class="btn btn-lg btn-primary w-100" id="btn-co2">
+          <i class="fas fa-cloud"></i> CO₂ Concentration
         </button>
+        <div class="mt-2">
+          <label for="co2-threshold">Threshold:</label>
+          <input type="number" id="co2-threshold" class="form-control" value="1000" />
+        </div>
       </div>
       <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" onclick="showData('light')">
+        <button class="btn btn-lg btn-primary w-100" id="btn-light">
           <i class="fas fa-sun"></i> Light Intensity
         </button>
+        <div class="mt-2">
+          <label for="light-threshold">Threshold:</label>
+          <input type="number" id="light-threshold" class="form-control" value="500" />
+        </div>
       </div>
     </div>
+    
+    <!-- Display alert -->
+    <div id="alert-message" class="alert alert-warning" style="display: none;"></div>
+    
+    
 
     <!-- Display Data Section -->
     <div class="row">
@@ -157,7 +187,7 @@
               </tr>
             </thead>
             <tbody id="data-table-body">
-              <!-- Data rows added dynamically here -->
+              <!-- Data rows added here -->
             </tbody>
           </table>
           <p id="alert-message" class="alert-message"></p>
@@ -168,22 +198,16 @@
         
         <!-- Control Buttons Section -->
         <div class="control-panel mt-4">
-          <h5>Adjust Settings</h5>
+          <h5>Control</h5>
           <div class="row">
             <div class="col-md-3">
-              <button class="btn btn-warning w-100" onclick="adjustTemperature(1)">Increase Temp</button>
+              <button class="btn btn-info w-100" onclick="toggleLight()">Open Window </button>
             </div>
             <div class="col-md-3">
-              <button class="btn btn-danger w-100" onclick="adjustTemperature(-1)">Decrease Temp</button>
+              <button class="btn btn-secondary w-100" onclick="adjustFan()">Close Window </button>
             </div>
             <div class="col-md-3">
-              <button class="btn btn-info w-100" onclick="toggleLight()">Toggle Light</button>
-            </div>
-            <div class="col-md-3">
-              <button class="btn btn-secondary w-100" onclick="adjustFan()">Adjust Fan</button>
-            </div>
-            <div class="col-md-3">
-              <button class="btn btn-success w-100" onclick="waterPlant()">Water Plant</button>
+              <button class="btn btn-secondary w-100" onclick="adjustFan()">OnlyFan </button>
             </div>
           </div>
         </div>
@@ -191,12 +215,8 @@
     </div>
   </div>
 
-  
-  <!-- Custom JavaScript -->
+  <!-- JS -->
   <script src="../js/data_visual.js"></script>
-  
-
-  <!-- Bootstrap JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

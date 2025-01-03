@@ -4,7 +4,7 @@ import time
 
 # Key MB
 ADAFRUIT_AIO_USERNAME = 'SmartFarmUSTH'
-# ADAFRUIT_AIO_KEY = ''
+ADAFRUIT_AIO_KEY = 'aio_RDjA08U0onvxkLVNJaD2TlZ6lRIZ'
 
 # CHANNEL
 OUT_CHANNEL = "sfout"

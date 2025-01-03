@@ -51,6 +51,15 @@
                         <li><a class="dropdown-item" href="#">Something else here</a></li>
                     </ul>
                 </li>
+                <li class="nav-item dropdown"> 
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="fas fa-wifi"></i> WiFi
+                  </a>
+                  <ul class="dropdown-menu" id="wifi-list">
+                      <!-- Show WiFi here-->
+                      <li><a class="dropdown-item" href="#">Scanning...</a></li>
+                  </ul>
+                </li>            
                 <li class="nav-item">
                     <a class="nav-link" href="#" id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false" onclick="hideNotification()">
                         <i class="fas fa-bell"></i>
@@ -75,7 +84,7 @@
   <div class="d-flex">
     <!-- Sidebar -->
     <nav class="d-flex flex-column bg-dark p-3 text-white" style="width: 150px;">
-      <h3 class="mb-4">Home</h3>
+      
       <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
           <a href="dashboard.html" class="nav-link text-white" id="dashboard-link">

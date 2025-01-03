@@ -117,4 +117,3 @@ function updateChart() {
 setInterval(simulateData, 3000);
 document.addEventListener("DOMContentLoaded", updateDashboardValues);
 
-

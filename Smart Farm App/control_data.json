@@ -1,0 +1,42 @@
+[
+    {
+        "updated_time": "2024-12-26T17:40:33",
+        "temperature": "29.1",
+        "humidity": "46.9",
+        "co2": "1020",
+        "light_intensity": "86",
+        "color": "#fc8803"
+    },
+    {
+        "updated_time": "2024-12-26T17:40:06",
+        "temperature": "39.1",
+        "humidity": "56.9",
+        "co2": "1100",
+        "light_intensity": "89",
+        "color": "#fc8803"
+    },
+    {
+        "updated_time": "2024-12-26T17:39:47",
+        "temperature": "34.1",
+        "humidity": "78.9",
+        "co2": "1330",
+        "light_intensity": "95",
+        "color": "#fc8803"
+    },
+    {
+        "updated_time": "2024-12-26T17:39:23",
+        "temperature": "26.1",
+        "humidity": "83.9",
+        "co2": "1240",
+        "light_intensity": "99",
+        "color": "#fc8803"
+    },
+    {
+        "updated_time": "2024-12-26T17:38:59",
+        "temperature": "29.1",
+        "humidity": "53.9",
+        "co2": "1230",
+        "light_intensity": "93",
+        "color": "#fc8803"
+    }
+]
