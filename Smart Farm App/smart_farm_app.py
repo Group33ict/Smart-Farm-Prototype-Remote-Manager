@@ -256,6 +256,62 @@ def close_smart_farm_window():
         }
     
 
+def light_on():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="light_open")
+        return {
+            "status": "success",
+            "message": "Turn light on successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to turn light on: {str(e)}"
+        }
+    
+
+def light_off():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="light_close")
+        return {
+            "status": "success",
+            "message": "Turn light off successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to turn light off: {str(e)}"
+        }
+
+
+def open_smart_farm_fan():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="fan_open")
+        return {
+            "status": "success",
+            "message": "Open fan successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to open fan: {str(e)}"
+        }
+
+
+def close_smart_farm_fan():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="fan_close")
+        return {
+            "status": "success",
+            "message": "Close fan successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to close fan: {str(e)}"
+        }
+    
+
 
 # Receive request messages from Message broker functions
 
@@ -285,9 +341,6 @@ def request_wifi_info():
         }
     
 
-import json
-import os
-
 def retrieve_and_save_smart_farm_data():
     """Retrieve data from the message broker, save it to the database, and export it to a JSON file."""
     try:
@@ -306,7 +359,8 @@ def retrieve_and_save_smart_farm_data():
         if not isinstance(data_list, list):
             return {
                 "status": "error",
-                "message": "Unexpected data format received from the broker. Expected a list of dictionaries."
+                "message": "Unexpected data format received from the broker. Expected a list of dictionaries.",
+                "broker data": broker_data
             }
 
         saved_data = []
@@ -314,15 +368,17 @@ def retrieve_and_save_smart_farm_data():
         for data in data_list:
             co2 = data.get("co2")
             temp = data.get("temp")
+            light_intensity = data.get("ligth")
             
             # Add a new record to the database for each item
             new_entry = SmartFarmData(
                 co2=co2,
-                temperature=temp
+                temperature=temp,
+                light_intensity=light_intensity
             )
 
             db.session.add(new_entry)
-            saved_data.append({"co2": co2, "temperature": temp})
+            saved_data.append({"co2": co2, "temperature": temp, "light": light_intensity})
 
         db.session.commit()
 
@@ -684,13 +740,41 @@ def close_window():
     return  status_code
 
 
+@app.route('/light_on', methods=['POST'])
+# @jwt_required()  
+def turn_light_on():
+    status_code = light_on()
+    return status_code
+
+
+@app.route('/light_off', methods=['POST'])
+# @jwt_required()  
+def turn_light_off():
+    status_code = light_off()
+    return status_code
+
+
+@app.route('/open_fan', methods=['POST'])
+# @jwt_required()  
+def open_fan():
+    status_code = open_smart_farm_fan()
+    return status_code
+
+
+@app.route('/close_fan', methods=['POST'])
+# @jwt_required()  
+def close_fan():
+    status_code = close_smart_farm_fan()
+    return  status_code
+
+
 # Serve static file function
 @app.route('/static/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./static/iot/templates', path)
 
-# rq.sf_send(topic=rq.IN_CHANNEL, msg="reqwifi")
+# rq.sf_send(topic=rq.IN_CHANNEL, msg="CoderTapSu")
 
 if __name__ == '__main__':
     setup_database()  # Initialize the database
