@@ -317,22 +317,34 @@ def close_smart_farm_fan():
 
 def request_wifi_info():
     """Send a request to the message broker to retrieve current Wi-Fi information."""
-    # Request the Wi-Fi information from the broker
-    wifi_info = rq.sf_recv(topic=rq.OUT_CHANNEL)  # Assuming the feed storing Wi-Fi data is called 'wifi_info'
+    # Request the Smart Farm to send the Wifi information to the wfout channel in the broker
+    rq.sf_send(topic=rq.IN_CHANNEL, msg="/flash/wifi.json")
+
+    # Request the Wi-Fi information from the wfout channel in the broker
+    wifi_info = rq.sf_recv_from_wfout(topic=rq.WIFI_CHANNEL)  # Assuming the feed storing Wi-Fi data is called 'wifi_info'
 
     # Check if the Wi-Fi data was received
     if wifi_info:
+        # Convert JSON string to Python object
+        try:
+            wifi_data = json.loads(wifi_info)
+        except json.JSONDecodeError as e:
+            return {
+                "status": "error",
+                "message": f"Failed to parse Wi-Fi information: {str(e)}"
+            }
+        
         # Print or process the Wi-Fi data
-        print(f"Current Wi-Fi Information: {wifi_info}")
+        print(f"Current Wi-Fi Information: {wifi_data}")
         
         # Save to a JSON file
         with open('current_wifi_info.json', 'w') as f:
-            json.dump(wifi_info, f, indent=4)
+            json.dump(wifi_data, f, indent=4)
         
         return {
             "status": "success",
             "message": "Wi-Fi information retrieved successfully.",
-            "data": wifi_info
+            "data": wifi_data
         }
     else:
         return {
@@ -345,7 +357,7 @@ def retrieve_and_save_smart_farm_data():
     """Retrieve data from the message broker, save it to the database, and export it to a JSON file."""
     try:
         # Retrieve data from the broker
-        broker_data = rq.sf_recv(topic=rq.OUT_CHANNEL)  # Assuming "smart_farm_data" is the broker topic/feed
+        broker_data = rq.sf_recv_from_sfout(topic=rq.OUT_CHANNEL)  # Assuming "smart_farm_data" is the broker topic/feed
         
         if not broker_data:
             return {
@@ -354,13 +366,25 @@ def retrieve_and_save_smart_farm_data():
             }
         
         # Parse the data (assuming it comes in JSON format)
-        data_list = json.loads(broker_data)  # Parse as a list of dictionaries
-        
-        if not isinstance(data_list, list):
+        try:
+            parsed_data = json.loads(broker_data)
+        except json.JSONDecodeError as e:
             return {
                 "status": "error",
-                "message": "Unexpected data format received from the broker. Expected a list of dictionaries.",
-                "broker data": broker_data
+                "message": f"Failed to parse broker data: {str(e)}",
+                "broker_data": broker_data
+            }
+
+        # Ensure data is in list format
+        if isinstance(parsed_data, dict):
+            data_list = [parsed_data]  # Wrap the single dictionary in a list
+        elif isinstance(parsed_data, list):
+            data_list = parsed_data
+        else:
+            return {
+                "status": "error",
+                "message": "Unexpected data format received from the broker. Expected a dictionary or a list of dictionaries.",
+                "broker_data": broker_data
             }
 
         saved_data = []
@@ -368,7 +392,7 @@ def retrieve_and_save_smart_farm_data():
         for data in data_list:
             co2 = data.get("co2")
             temp = data.get("temp")
-            light_intensity = data.get("ligth")
+            light_intensity = data.get("light")
             
             # Add a new record to the database for each item
             new_entry = SmartFarmData(
@@ -774,7 +798,9 @@ def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./static/iot/templates', path)
 
-# rq.sf_send(topic=rq.IN_CHANNEL, msg="CoderTapSu")
+rq.sf_send(topic=rq.IN_CHANNEL, msg="wifi_CoderTapSu")
+
+
 
 if __name__ == '__main__':
     setup_database()  # Initialize the database
