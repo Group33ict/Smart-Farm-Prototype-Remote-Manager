@@ -56,6 +56,11 @@ body {
   color: white;
   font-weight: bold;
 }
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 
 /* Style for rows exceeding threshold */
 tr {

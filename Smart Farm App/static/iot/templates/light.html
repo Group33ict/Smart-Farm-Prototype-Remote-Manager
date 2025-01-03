@@ -69,14 +69,14 @@
                         </a>
                     </li>
                 </ul>
-                <form class="d-flex me-2" role="search"> <!-- Thêm class me-2 để tạo khoảng cách -->
+                <form class="d-flex me-2" role="search"> 
                     <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">
                         <i class="fas fa-search"></i>
                     </button>
                 </form>
-                <ul class="navbar-nav ms-auto my-2 my-lg-0"> <!-- Thêm ms-auto để đẩy các phần tử sang bên phải -->
-                    <li class="nav-item dropdown"> <!-- Đổi vị trí Setting và Notification -->
+                <ul class="navbar-nav ms-auto my-2 my-lg-0"> 
+                    <li class="nav-item dropdown"> 
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog"></i> Setting
                         </a>
@@ -87,6 +87,15 @@
                             <li><a class="dropdown-item" href="#">Something else here</a></li>
                         </ul>
                     </li>
+                    <li class="nav-item dropdown"> 
+                      <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="fas fa-wifi"></i> WiFi
+                      </a>
+                      <ul class="dropdown-menu" id="wifi-list">
+                          <!-- Show WiFi here-->
+                          <li><a class="dropdown-item" href="#">Scanning...</a></li>
+                      </ul>
+                    </li> 
                     <li class="nav-item">
                         <a class="nav-link" href="#" id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false" onclick="hideNotification()">
                             <i class="fas fa-bell"></i>
@@ -111,7 +120,7 @@
     <div class="d-flex">
         <!-- Sidebar -->
         <nav class="d-flex flex-column bg-dark p-3 text-white" style="width: 150px; height: 100vh;">
-          <h3 class="mb-4">Home</h3>
+          
           <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item">
               <a href="dashboard.html" class="nav-link text-white active">
@@ -189,7 +198,7 @@
   </div>
 </div>
 
-<!-- Custom JavaScript -->
+<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 <script src="../js/light.js"></script>
