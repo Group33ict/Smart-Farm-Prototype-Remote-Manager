@@ -42,7 +42,9 @@ async function fetchData() {
     }
   } catch (error) {
     console.error("Error fetching data:", error);
-    alert("Failed to fetch data. Please try again later.");
+    const alertMessageElement = document.getElementById("alert-message");
+    alertMessageElement.textContent = "Error fetching data. Please check your internet connection or server status.";
+    alertMessageElement.style.display = "block";
   }
 }
 
@@ -195,6 +197,32 @@ function setFilter(filter) {
 }
 
 /**
+ * Control actions for devices: lights, fans, and windows.
+ * @param {string} action - The action to perform (open_window, close_window, light_on, light_off, open_fan, close_fan).
+ */
+async function controlDevice(action) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${action}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to ${action}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    alert(`Action '${action}' successful: ${result.message}`);
+  } catch (error) {
+    console.error(`Error performing action '${action}':`, error);
+    alert(`Failed to perform action '${action}'. Please try again later.`);
+  }
+}
+
+/**
  * Initialize the page by setting up event listeners and fetching data on load.
  */
 window.onload = function () {
@@ -202,6 +230,12 @@ window.onload = function () {
   const humidityBtn = document.getElementById("btn-humidity");
   const co2Btn = document.getElementById("btn-co2");
   const lightBtn = document.getElementById("btn-light");
+  const lightOnBtn = document.getElementById("btn-light-on");
+  const lightOffBtn = document.getElementById("btn-light-off");
+  const fanOnBtn = document.getElementById("btn-fan-on");
+  const fanOffBtn = document.getElementById("btn-fan-off");
+  const windowOpenBtn = document.getElementById("btn-window-open");
+  const windowCloseBtn = document.getElementById("btn-window-close");
 
   // Ensure buttons exist in DOM before adding event listeners
   if (temperatureBtn) {
@@ -215,6 +249,24 @@ window.onload = function () {
   }
   if (lightBtn) {
     lightBtn.addEventListener("click", () => setFilter("light_intensity"));
+  }
+  if (lightOnBtn) {
+    lightOnBtn.addEventListener("click", () => toggleDevice("light_on"));
+  }
+  if (lightOffBtn) {
+    lightOffBtn.addEventListener("click", () => toggleDevice("light_off"));
+  }
+  if (fanOnBtn) {
+    fanOnBtn.addEventListener("click", () => toggleDevice("open_fan"));
+  }
+  if (fanOffBtn) {
+    fanOffBtn.addEventListener("click", () => toggleDevice("close_fan"));
+  }
+  if (windowOpenBtn) {
+    windowOpenBtn.addEventListener("click", () => toggleDevice("open_window"));
+  }
+  if (windowCloseBtn) {
+    windowCloseBtn.addEventListener("click", () => toggleDevice("close_window"));
   }
 
   fetchData(); // Initial fetch
