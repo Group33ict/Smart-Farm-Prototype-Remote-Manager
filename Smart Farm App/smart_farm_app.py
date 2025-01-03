@@ -228,6 +228,34 @@ def send_control_message_with_data():
         }
 
 
+def open_smart_farm_window():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="win_open")
+        return {
+            "status": "success",
+            "message": "Open window successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to open window: {str(e)}"
+        }
+
+
+def close_smart_farm_window():
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg="win_close")
+        return {
+            "status": "success",
+            "message": "Close window successfully!"
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to close window: {str(e)}"
+        }
+    
+
 
 # Receive request messages from Message broker functions
 
@@ -257,8 +285,11 @@ def request_wifi_info():
         }
     
 
+import json
+import os
+
 def retrieve_and_save_smart_farm_data():
-    """Retrieve data from the message broker and save it to the database."""
+    """Retrieve data from the message broker, save it to the database, and export it to a JSON file."""
     try:
         # Retrieve data from the broker
         broker_data = rq.sf_recv(topic=rq.OUT_CHANNEL)  # Assuming "smart_farm_data" is the broker topic/feed
@@ -270,36 +301,43 @@ def retrieve_and_save_smart_farm_data():
             }
         
         # Parse the data (assuming it comes in JSON format)
-        data = json.loads(broker_data)
-        temperature = data.get("temperature")
-        humidity = data.get("humidity")
-        co2_concentration = data.get("co2_concentration")
-        light_intensity = data.get("light_intensity")
-        color = data.get("color")  # Optional: include any other relevant fields
+        data_list = json.loads(broker_data)  # Parse as a list of dictionaries
+        
+        if not isinstance(data_list, list):
+            return {
+                "status": "error",
+                "message": "Unexpected data format received from the broker. Expected a list of dictionaries."
+            }
 
-        # Add a new record to the database
-        new_entry = SmartFarmData(
-            temperature=temperature,
-            humidity=humidity,
-            co2_concentration=co2_concentration,
-            light_intensity=light_intensity,
-            color=color
-        )
+        saved_data = []
 
-        db.session.add(new_entry)
+        for data in data_list:
+            co2 = data.get("co2")
+            temp = data.get("temp")
+            
+            # Add a new record to the database for each item
+            new_entry = SmartFarmData(
+                co2=co2,
+                temperature=temp
+            )
+
+            db.session.add(new_entry)
+            saved_data.append({"co2": co2, "temperature": temp})
+
         db.session.commit()
+
+        # Export the saved data to a JSON file
+        output_file = "smf_data_from_sensor.json"
+        with open(output_file, "w") as json_file:
+            json.dump(saved_data, json_file, indent=4)
 
         return {
             "status": "success",
-            "message": "Smart farm data retrieved and saved successfully.",
-            "data": {
-                "temperature": temperature,
-                "humidity": humidity,
-                "co2_concentration": co2_concentration,
-                "light_intensity": light_intensity,
-                "color": color
-            }
+            "message": "Smart farm data retrieved, saved to the database, and exported to a JSON file.",
+            "data": saved_data,
+            "exported_file": os.path.abspath(output_file)  # Return the absolute path to the file
         }
+
     except Exception as e:
         return {
             "status": "error",
@@ -439,7 +477,7 @@ def data_retrieval():
     }
 
     # Define the file path for exporting
-    file_path = os.path.join(os.getcwd(), "smart_farm_data.json")
+    file_path = os.path.join(os.getcwd(), "smf_data_from_dtb.json")
 
     # Write the response data to the JSON file
     try:
@@ -632,14 +670,28 @@ def send_control_message():
     return jsonify(response)
 
 
+@app.route('/open_window', methods=['POST'])
+# @jwt_required()  
+def open_window():
+    status_code = open_smart_farm_window()
+    return status_code
+
+
+@app.route('/close_window', methods=['POST'])
+# @jwt_required()  
+def close_window():
+    status_code = close_smart_farm_window()
+    return  status_code
+
+
 # Serve static file function
 @app.route('/static/iot/templates/<path:path>')
 def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./static/iot/templates', path)
 
+# rq.sf_send(topic=rq.IN_CHANNEL, msg="reqwifi")
 
 if __name__ == '__main__':
     setup_database()  # Initialize the database
     app.run(debug=True)
-    
