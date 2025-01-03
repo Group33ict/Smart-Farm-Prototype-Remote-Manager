@@ -222,9 +222,6 @@ async function controlDevice(action) {
   }
 }
 
-/**
- * Initialize the page by setting up event listeners and fetching data on load.
- */
 window.onload = function () {
   const temperatureBtn = document.getElementById("btn-temperature");
   const humidityBtn = document.getElementById("btn-humidity");
@@ -251,23 +248,24 @@ window.onload = function () {
     lightBtn.addEventListener("click", () => setFilter("light_intensity"));
   }
   if (lightOnBtn) {
-    lightOnBtn.addEventListener("click", () => toggleDevice("light_on"));
+    lightOnBtn.addEventListener("click", () => controlDevice("light_on"));
   }
   if (lightOffBtn) {
-    lightOffBtn.addEventListener("click", () => toggleDevice("light_off"));
+    lightOffBtn.addEventListener("click", () => controlDevice("light_off"));
   }
   if (fanOnBtn) {
-    fanOnBtn.addEventListener("click", () => toggleDevice("open_fan"));
+    fanOnBtn.addEventListener("click", () => controlDevice("open_fan"));
   }
   if (fanOffBtn) {
-    fanOffBtn.addEventListener("click", () => toggleDevice("close_fan"));
+    fanOffBtn.addEventListener("click", () => controlDevice("close_fan"));
   }
   if (windowOpenBtn) {
-    windowOpenBtn.addEventListener("click", () => toggleDevice("open_window"));
+    windowOpenBtn.addEventListener("click", () => controlDevice("open_window"));
   }
   if (windowCloseBtn) {
-    windowCloseBtn.addEventListener("click", () => toggleDevice("close_window"));
+    windowCloseBtn.addEventListener("click", () => controlDevice("close_window"));
   }
 
   fetchData(); // Initial fetch
 };
+
