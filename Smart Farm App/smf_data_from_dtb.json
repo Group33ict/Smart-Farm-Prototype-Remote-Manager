@@ -2,44 +2,84 @@
     "status": "success",
     "data": [
         {
-            "updated_time": "2024-12-26 17:40:33",
-            "temperature": "29.1",
-            "humidity": "46.9",
-            "co2": "1020",
-            "light_intensity": "86",
-            "color": "#fc8803"
+            "updated_time": "2025-01-03 16:08:14",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1542",
+            "light_intensity": "250",
+            "color": null
         },
         {
-            "updated_time": "2024-12-26 17:40:06",
-            "temperature": "39.1",
-            "humidity": "56.9",
-            "co2": "1100",
-            "light_intensity": "89",
-            "color": "#fc8803"
+            "updated_time": "2025-01-03 15:41:42",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1593",
+            "light_intensity": "277",
+            "color": null
         },
         {
-            "updated_time": "2024-12-26 17:39:47",
-            "temperature": "34.1",
-            "humidity": "78.9",
-            "co2": "1330",
-            "light_intensity": "95",
-            "color": "#fc8803"
+            "updated_time": "2025-01-03 15:41:40",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1593",
+            "light_intensity": "277",
+            "color": null
         },
         {
-            "updated_time": "2024-12-26 17:39:23",
-            "temperature": "26.1",
-            "humidity": "83.9",
-            "co2": "1240",
-            "light_intensity": "99",
-            "color": "#fc8803"
+            "updated_time": "2025-01-03 15:41:38",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1593",
+            "light_intensity": "277",
+            "color": null
         },
         {
-            "updated_time": "2024-12-26 17:38:59",
-            "temperature": "29.1",
-            "humidity": "53.9",
-            "co2": "1230",
-            "light_intensity": "93",
-            "color": "#fc8803"
+            "updated_time": "2025-01-03 15:41:36",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1570",
+            "light_intensity": "277",
+            "color": null
+        },
+        {
+            "updated_time": "2025-01-03 15:41:34",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1570",
+            "light_intensity": "277",
+            "color": null
+        },
+        {
+            "updated_time": "2025-01-03 15:41:33",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1570",
+            "light_intensity": "277",
+            "color": null
+        },
+        {
+            "updated_time": "2025-01-03 15:41:31",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1559",
+            "light_intensity": "278",
+            "color": null
+        },
+        {
+            "updated_time": "2025-01-03 15:41:29",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1559",
+            "light_intensity": "278",
+            "color": null
+        },
+        {
+            "updated_time": "2025-01-03 15:41:27",
+            "temperature": null,
+            "humidity": null,
+            "co2": "1574",
+            "light_intensity": "277",
+            "color": null
         }
     ]
 }

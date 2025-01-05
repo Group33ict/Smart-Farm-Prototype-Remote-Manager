@@ -1,0 +1,28 @@
+.gitignore
+# Ignore the json files
+sample.json
+conf.json
+control_data.json
+current_wifi_info.json
+smf_data_from_dtb.json
+smf_data_from_sensor.json
+
+request_message.py
+
+# Python-related ignores
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.env
+
+# Virtual environment
+venv/
+env/
+
+# IDEs and editors
+.vscode/
+.idea/
+
+# Logs
+*.log
