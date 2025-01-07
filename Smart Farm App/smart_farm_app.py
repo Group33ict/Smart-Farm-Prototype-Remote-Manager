@@ -40,13 +40,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# User Data model
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password = db.Column(db.String(80), nullable=False)
-
-
 # Flask WTForms
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
@@ -71,27 +64,21 @@ def gmt7_now():
     return datetime.now(pytz.timezone('Asia/Bangkok'))
 
 
+# User Data model
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(80), nullable=False)
+
+
 # Smart Farm Data Model
 class SmartFarmData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     updated_time = db.Column(db.DateTime, default=gmt7_now)
+    co2 = db.Column(db.String(50), nullable=True)
     temperature = db.Column(db.String(50), nullable=True)
     humidity = db.Column(db.String(50), nullable=True)
-    co2 = db.Column(db.String(50), nullable=True)
     light_intensity = db.Column(db.String(50), nullable=True)
-    color = db.Column(db.String(50), nullable=True)
-
-
-# Plant Data Model
-class PlantData(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.DateTime, default=gmt7_now)
-    species = db.Column(db.String(50), nullable=True)
-    optimal_temperature = db.Column(db.String(50), nullable=True)
-    optimal_humidity = db.Column(db.String(50), nullable=True)
-    optimal_co2 = db.Column(db.String(50), nullable=True)
-    optimal_light_intensity = db.Column(db.String(50), nullable=True)
-    optimal_color = db.Column(db.String(50), nullable=True)
 
 
 # Set up database function
@@ -105,7 +92,7 @@ def setup_database():
 def update_parameter(parameter_name, value):
     """Update a specific parameter and insert a new row."""
     # Check if the parameter is valid
-    valid_parameters = {"temperature", "humidity", "co2", "light_intensity", "color"}
+    valid_parameters = {"temperature", "humidity", "co2", "light_intensity"}
     if parameter_name not in valid_parameters:
         return {
             "status": "error",
@@ -127,8 +114,7 @@ def update_parameter(parameter_name, value):
         temperature=latest_entry.temperature if parameter_name != "temperature" else value,
         humidity=latest_entry.humidity if parameter_name != "humidity" else value,
         co2=latest_entry.co2 if parameter_name != "co2" else value,
-        light_intensity=latest_entry.light_intensity if parameter_name != "light_intensity" else value,
-        color=latest_entry.color if parameter_name != "color" else value
+        light_intensity=latest_entry.light_intensity if parameter_name != "light_intensity" else value
     )
 
     db.session.add(new_entry)
@@ -144,7 +130,6 @@ def update_parameter(parameter_name, value):
             "humidity": new_entry.humidity,
             "co2": new_entry.co2,
             "light_intensity": new_entry.light_intensity,
-            "color": new_entry.color,
         }
     }
     return response, 200
@@ -154,26 +139,26 @@ def update_parameter(parameter_name, value):
 # Send request messages to Message broker functions
 
 def request_wifi_change():
-    """Send a request message to the message broker to change Wi-Fi credentials, including the conf.json file contents."""
+    """Send a request message to the message broker to change Wi-Fi credentials, including the wifi_conf.json file contents."""
     # Get the absolute path to the current script's directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    conf_file_path = os.path.join(script_dir, "conf.json")
+    conf_file_path = os.path.join(script_dir, "wifi_conf.json")
 
-    # Check if the conf.json file exists
+    # Check if the wifi_conf.json file exists
     if not os.path.exists(conf_file_path):
         return {
             "status": "error",
-            "message": "conf.json file not found."
+            "message": "wifi_conf.json file not found."
         }, 404
 
-    # Read Wi-Fi credentials from the conf.json file
+    # Read Wi-Fi credentials from the wifi_conf.json file
     try:
         with open(conf_file_path, "r") as conf_file:
             wifi_credentials = json.load(conf_file)
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Failed to read conf.json: {str(e)}"
+            "message": f"Failed to read wifi_conf.json: {str(e)}"
         }, 500
 
     # Prepare the message for the message broker
@@ -192,40 +177,53 @@ def request_wifi_change():
 
     return {
         "status": "success",
-        "message": "Wi-Fi change request sent successfully, including conf.json contents.",
+        "message": "Wi-Fi change request sent successfully, including wifi_conf.json contents.",
         "wifi_credentials": wifi_credentials
     }, 200
 
 
-def send_control_message_with_data():
-    # Retrieve the control_data.json file
-    try:
-        json_file_path = os.path.join(os.path.dirname(__file__), "control_data.json")
-        with open(json_file_path, "r") as json_file:
-            control_data = json.load(json_file)
-    except FileNotFoundError:
-        return {
-            "status": "error",
-            "message": "control_data.json file not found."
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Failed to read control_data.json: {str(e)}"
-        }
+def request_environmental_change():
+    """Send a request message to the message broker to change the environmental condition, including the smf_conf.json file contents."""
+    # Get the absolute path to the current script's directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    conf_file_path = os.path.join(script_dir, "smf_conf.json")
 
-    # Send the control data to the message broker
-    try:
-        rq.sf_send(topic=rq.IN_CHANNEL, msg="control_data")
+    # Check if the smf_conf.json file exists
+    if not os.path.exists(conf_file_path):
         return {
-            "status": "success",
-            "message": "Control message sent successfully!"
-        }
+            "status": "error",
+            "message": "smf_conf.json file not found."
+        }, 404
+
+    # Read environmental settings from the smf_conf.json file
+    try:
+        with open(conf_file_path, "r") as conf_file:
+            smf_conf = json.load(conf_file)
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Failed to send control message: {str(e)}"
-        }
+            "message": f"Failed to read smf_conf.json: {str(e)}"
+        }, 500
+
+    # Prepare the message for the message broker
+    msg = {
+        "smf_conf": smf_conf  
+    }
+
+    # Send the message to the message broker
+    try:
+        rq.sf_send(topic=rq.IN_CHANNEL, msg=msg)
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to send message to the message broker: {str(e)}"
+        }, 500
+
+    return {
+        "status": "success",
+        "message": "Environmental condition change request sent successfully, including smf_conf.json contents.",
+        "smf_conf": smf_conf
+    }, 200
 
 
 def open_smart_farm_window():
@@ -391,18 +389,18 @@ def retrieve_and_save_smart_farm_data():
 
         for data in data_list:
             co2 = data.get("co2")
-            temp = data.get("temp")
-            light_intensity = data.get("light")
+            # temp = data.get("temp")
+            # light_intensity = data.get("light")
             
             # Add a new record to the database for each item
             new_entry = SmartFarmData(
                 co2=co2,
-                temperature=temp,
-                light_intensity=light_intensity
+                # temperature=temp,
+                # light_intensity=light_intensity
             )
 
             db.session.add(new_entry)
-            saved_data.append({"co2": co2, "temperature": temp, "light": light_intensity})
+            saved_data.append({"co2": co2})
 
         db.session.commit()
 
@@ -475,16 +473,6 @@ def login():
     }), 401
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
-@login_required
-def dashboard():
-    response = {
-        "status": "success",
-        "message": "Welcome to the Dashboard."
-    }
-    return jsonify(response)
-
-
 @app.route('/register', methods=['POST'])
 def register():
     # Parse JSON data
@@ -546,11 +534,7 @@ def data_retrieval():
         "data": [
             {
                 "updated_time": item.updated_time.strftime("%Y-%m-%d %H:%M:%S") if item.updated_time else None,
-                "temperature": item.temperature,
-                "humidity": item.humidity,
                 "co2": item.co2,
-                "light_intensity": item.light_intensity,
-                "color": item.color,
             } 
             for item in all_data
         ]
@@ -583,15 +567,13 @@ def data_simulation():
     humidity = incoming_data.get("humidity")
     co2 = incoming_data.get("co2")
     light_intensity = incoming_data.get("light_intensity")
-    color = incoming_data.get("color")
 
     # Insert new row into the database
     new_entry = SmartFarmData(
         temperature=temperature,
         humidity=humidity,
         co2=co2,
-        light_intensity=light_intensity,
-        color=color
+        light_intensity=light_intensity
     )
     db.session.add(new_entry)
     db.session.commit()
@@ -605,14 +587,13 @@ def data_simulation():
             "humidity": item.humidity,
             "co2": item.co2,
             "light_intensity": item.light_intensity,
-            "color": item.color,
         }
         for item in all_data
     ]
 
     # Save the response_data to a JSON file
     try:
-        with open("control_data.json", "w") as json_file:
+        with open("smf_conf.json", "w") as json_file:
             json.dump(response_data, json_file, indent=4)
     except Exception as e:
         return jsonify({
@@ -698,23 +679,6 @@ def update_light_intensity():
     return jsonify(response), status_code
 
 
-@app.route('/update_color', methods=['POST'])
-@jwt_required()
-def update_color():
-    incoming_data = request.get_json()
-
-    if "color" not in incoming_data:
-        return jsonify({
-            "status": "error",
-            "message": "Missing 'color' in request data."
-        }), 400
-
-    parameter_name = "color"
-    value = incoming_data["color"]
-    response, status_code = update_parameter(parameter_name, value)
-    return jsonify(response), status_code
-
-
 
 # Message broker interactions API routes
 
@@ -741,12 +705,12 @@ def retrieve_sensor_data():
     return jsonify(response)
 
 
-@app.route('/send_control_message', methods=['POST'])
+@app.route('/request_environment_control', methods=['POST'])
 # @jwt_required() 
-def send_control_message():
+def request_environment_control():
     """API route to send a control message with smart farm data."""
     # Call the function to send the message
-    response = send_control_message_with_data()
+    response = request_environmental_change()
     return jsonify(response)
 
 

@@ -1,8 +1,8 @@
 .gitignore
 # Ignore the json files
 sample.json
-conf.json
-control_data.json
+wifi_conf.json
+smf_conf.json
 current_wifi_info.json
 smf_data_from_dtb.json
 smf_data_from_sensor.json
