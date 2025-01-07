@@ -40,13 +40,6 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-# User Data model
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    password = db.Column(db.String(80), nullable=False)
-
-
 # Flask WTForms
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired(), Length(min=4, max=20)], render_kw={"placeholder": "Username"})
@@ -71,27 +64,18 @@ def gmt7_now():
     return datetime.now(pytz.timezone('Asia/Bangkok'))
 
 
+# User Data model
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), nullable=False, unique=True)
+    password = db.Column(db.String(80), nullable=False)
+
+
 # Smart Farm Data Model
 class SmartFarmData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     updated_time = db.Column(db.DateTime, default=gmt7_now)
-    temperature = db.Column(db.String(50), nullable=True)
-    humidity = db.Column(db.String(50), nullable=True)
     co2 = db.Column(db.String(50), nullable=True)
-    light_intensity = db.Column(db.String(50), nullable=True)
-    color = db.Column(db.String(50), nullable=True)
-
-
-# Plant Data Model
-class PlantData(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(50), default=gmt7_now)
-    species = db.Column(db.String(50), nullable=True)
-    optimal_temperature = db.Column(db.String(50), nullable=True)
-    optimal_humidity = db.Column(db.String(50), nullable=True)
-    optimal_co2 = db.Column(db.String(50), nullable=True)
-    optimal_light_intensity = db.Column(db.String(50), nullable=True)
-    optimal_color = db.Column(db.String(50), nullable=True)
 
 
 # Set up database function
@@ -198,34 +182,47 @@ def request_wifi_change():
 
 
 def send_control_message_with_data():
-    # Retrieve the control_data.json file
-    try:
-        json_file_path = os.path.join(os.path.dirname(__file__), "control_data.json")
-        with open(json_file_path, "r") as json_file:
-            control_data = json.load(json_file)
-    except FileNotFoundError:
+    """Send a request message to the message broker to change the environmental condition, including the conf.json file contents."""
+    # Get the absolute path to the current script's directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    conf_file_path = os.path.join(script_dir, "control_data.json")
+
+    # Check if the control_data.json file exists
+    if not os.path.exists(conf_file_path):
         return {
             "status": "error",
             "message": "control_data.json file not found."
-        }
+        }, 404
+
+    # Read environmental settings from the control_data.json file
+    try:
+        with open(conf_file_path, "r") as conf_file:
+            control_data = json.load(conf_file)
     except Exception as e:
         return {
             "status": "error",
             "message": f"Failed to read control_data.json: {str(e)}"
-        }
+        }, 500
 
-    # Send the control data to the message broker
+    # Prepare the message for the message broker
+    msg = {
+        "control_data": control_data  # Include the file's contents
+    }
+
+    # Send the message to the message broker
     try:
-        rq.sf_send(topic=rq.IN_CHANNEL, msg="control_data")
-        return {
-            "status": "success",
-            "message": "Control message sent successfully!"
-        }
+        rq.sf_send(topic=rq.IN_CHANNEL, msg=msg)
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Failed to send control message: {str(e)}"
-        }
+            "message": f"Failed to send message to the message broker: {str(e)}"
+        }, 500
+
+    return {
+        "status": "success",
+        "message": "Environmental condition change request sent successfully, including data_control.json contents.",
+        "control_data": control_data
+    }, 200
 
 
 def open_smart_farm_window():
@@ -391,18 +388,18 @@ def retrieve_and_save_smart_farm_data():
 
         for data in data_list:
             co2 = data.get("co2")
-            temp = data.get("temp")
-            light_intensity = data.get("light")
+            # temp = data.get("temp")
+            # light_intensity = data.get("light")
             
             # Add a new record to the database for each item
             new_entry = SmartFarmData(
                 co2=co2,
-                temperature=temp,
-                light_intensity=light_intensity
+                # temperature=temp,
+                # light_intensity=light_intensity
             )
 
             db.session.add(new_entry)
-            saved_data.append({"co2": co2, "temperature": temp, "light": light_intensity})
+            saved_data.append({"co2": co2})
 
         db.session.commit()
 
@@ -546,11 +543,7 @@ def data_retrieval():
         "data": [
             {
                 "updated_time": item.updated_time.strftime("%Y-%m-%d %H:%M:%S") if item.updated_time else None,
-                "temperature": item.temperature,
-                "humidity": item.humidity,
                 "co2": item.co2,
-                "light_intensity": item.light_intensity,
-                "color": item.color,
             } 
             for item in all_data
         ]
