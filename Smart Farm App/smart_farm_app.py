@@ -85,7 +85,7 @@ class SmartFarmData(db.Model):
 # Plant Data Model
 class PlantData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.DateTime, default=gmt7_now)
+    name = db.Column(db.String(50), default=gmt7_now)
     species = db.Column(db.String(50), nullable=True)
     optimal_temperature = db.Column(db.String(50), nullable=True)
     optimal_humidity = db.Column(db.String(50), nullable=True)
