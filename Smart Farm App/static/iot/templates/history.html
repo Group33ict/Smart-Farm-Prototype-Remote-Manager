@@ -59,7 +59,7 @@
                       <!-- Show WiFi here-->
                       <li><a class="dropdown-item" href="#">Scanning...</a></li>
                   </ul>
-                </li> 
+                </li>            
                 <li class="nav-item">
                     <a class="nav-link" href="#" id="notification-bell" data-bs-toggle="dropdown" aria-expanded="false" onclick="hideNotification()">
                         <i class="fas fa-bell"></i>
@@ -83,26 +83,26 @@
   
   <div class="d-flex">
     <!-- Sidebar -->
-    <nav class="d-flex flex-column bg-dark p-3 text-white" style="width: 150px; height: 100vh;">
+    <nav class="d-flex flex-column bg-dark p-3 text-white" style="width: 150px;">
       
       <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">
-          <a href="dashboard.html" class="nav-link text-white active">
+          <a href="dashboard.html" class="nav-link text-white" id="dashboard-link">
             <i class="fas fa-home me-2"></i> Dashboard
           </a>
         </li>
         <li class="nav-item">
-          <a href="data_visual.html" class="nav-link text-white">
+          <a href="data_visual.html" class="nav-link text-white" id="data-visual-link">
             <i class="fas fa-chart-line me-2"></i> Data Visualization
           </a>
         </li>
         <li class="nav-item">
-          <a href="light.html" class="nav-link text-white">
+          <a href="light.html" class="nav-link text-white"id="light-link">
             <i class="fas fa-chart-line me-2"></i> Light
           </a>
         </li>
         <li class="nav-item">
-          <a href="history.html" class="nav-link text-white">
+          <a href="history.html" class="nav-link text-white" id="history-link">
             <i class="fas fa-history me-2"></i> History
           </a>
         </li>
@@ -119,110 +119,51 @@
         </ul>
       </div>
     </nav>
+    
+    <!-- Main Content -->
+    <div class="container mt-5">
+      <h1 class="text-center">Historical Data</h1>
   
-  <div class="container my-4">
-    <h2 class="text-center">Smart Farm Control Panel</h2>
-    
-    <!-- Current Plant Stats -->
-    <div class="row mb-4">
-      <div class="col-md-12 text-center">
-        <h5 id="current-stats">Current Plant Stats: Temperature: -- °C, Humidity: -- %, Light: -- lx, CO₂: -- ppm</h5>
-      </div>
-    </div>
-
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" id="btn-temperature">
-          <i class="fas fa-thermometer-half"></i> Temperature
-        </button>
-        <div class="mt-2">
-          <label for="temp-threshold">Threshold:</label>
-          <input type="number" id="temp-threshold" class="form-control" value="30" />
+      <!-- Filter Options -->
+      <div class="row my-4">
+        <div class="col-md-6">
+          <label for="time-filter" class="form-label">Select Time Filter:</label>
+          <select id="time-filter" class="form-select">
+            <option value="all">All</option>
+            <option value="day">Last 24 Hours</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
         </div>
       </div>
-      <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" id="btn-humidity">
-          <i class="fas fa-tint"></i> Humidity
-        </button>
-        <div class="mt-2">
-          <label for="humidity-threshold">Threshold:</label>
-          <input type="number" id="humidity-threshold" class="form-control" value="60" />
-        </div>
-      </div>
-      <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" id="btn-co2">
-          <i class="fas fa-cloud"></i> CO₂ Concentration
-        </button>
-        <div class="mt-2">
-          <label for="co2-threshold">Threshold:</label>
-          <input type="number" id="co2-threshold" class="form-control" value="1000" />
-        </div>
-      </div>
-      <div class="col-md-3">
-        <button class="btn btn-lg btn-primary w-100" id="btn-light">
-          <i class="fas fa-sun"></i> Light Intensity
-        </button>
-        <div class="mt-2">
-          <label for="light-threshold">Threshold:</label>
-          <input type="number" id="light-threshold" class="form-control" value="500" />
-        </div>
-      </div>
-    </div>
-    
-    <!-- Display alert -->
-    <div id="alert-message" class="alert alert-warning" style="display: none;"></div>
-    
-    
-
-    <!-- Display Data Section -->
-    <div class="row">
-      <div class="col-md-6">
-        <div id="data-info" class="info-box">
-          <h5>Data Information</h5>
-          <table class="table table-bordered">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody id="data-table-body">
-              <!-- Data rows added here -->
-            </tbody>
-          </table>
-          <p id="alert-message" class="alert-message"></p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <canvas id="dataChart" class="chart-box"></canvas>
-        
-        <!-- Control Buttons Section -->
-        <div class="control-panel mt-4">
-          <div class="row mb-4">
-            <div>
-              <h3>Light Control</h3>
-              <button id="btn-light-on">Turn Light On</button>
-              <button id="btn-light-off">Turn Light Off</button>
-            </div>
-          
-            <div>
-              <h3>Fan Control</h3>
-              <button id="btn-fan-on">Turn Fan On</button>
-              <button id="btn-fan-off">Turn Fan Off</button>
-            </div>
-          
-            <div>
-              <h3>Window Control</h3>
-              <button id="btn-window-open">Open Window</button>
-              <button id="btn-window-close">Close Window</button>
-            </div>
-          
+  
+      <!-- Alert Message -->
+      <div id="alert-message" class="alert alert-danger" style="display: none;"></div>
+  
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Time</th>
+              <th>Temperature</th>
+              <th>Humidity</th>
+              <th>CO₂</th>
+              <th>Light Intensity</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body"></tbody>
+        </table>
       </div>
     </div>
   </div>
+  
 
-  <!-- JS -->
-  <script src="../js/data_visual.js"></script>
+  
+  <!-- Custom JavaScript -->
+  <script src="../js/history.js"></script>
+
+  <!-- Bootstrap JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
