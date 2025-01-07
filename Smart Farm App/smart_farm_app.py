@@ -138,26 +138,26 @@ def update_parameter(parameter_name, value):
 # Send request messages to Message broker functions
 
 def request_wifi_change():
-    """Send a request message to the message broker to change Wi-Fi credentials, including the conf.json file contents."""
+    """Send a request message to the message broker to change Wi-Fi credentials, including the wifi_conf.json file contents."""
     # Get the absolute path to the current script's directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    conf_file_path = os.path.join(script_dir, "conf.json")
+    conf_file_path = os.path.join(script_dir, "wifi_conf.json")
 
-    # Check if the conf.json file exists
+    # Check if the wifi_conf.json file exists
     if not os.path.exists(conf_file_path):
         return {
             "status": "error",
-            "message": "conf.json file not found."
+            "message": "wifi_conf.json file not found."
         }, 404
 
-    # Read Wi-Fi credentials from the conf.json file
+    # Read Wi-Fi credentials from the wifi_conf.json file
     try:
         with open(conf_file_path, "r") as conf_file:
             wifi_credentials = json.load(conf_file)
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Failed to read conf.json: {str(e)}"
+            "message": f"Failed to read wifi_conf.json: {str(e)}"
         }, 500
 
     # Prepare the message for the message broker
@@ -176,37 +176,37 @@ def request_wifi_change():
 
     return {
         "status": "success",
-        "message": "Wi-Fi change request sent successfully, including conf.json contents.",
+        "message": "Wi-Fi change request sent successfully, including wifi_conf.json contents.",
         "wifi_credentials": wifi_credentials
     }, 200
 
 
 def send_control_message_with_data():
-    """Send a request message to the message broker to change the environmental condition, including the conf.json file contents."""
+    """Send a request message to the message broker to change the environmental condition, including the smf_conf.json file contents."""
     # Get the absolute path to the current script's directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    conf_file_path = os.path.join(script_dir, "control_data.json")
+    conf_file_path = os.path.join(script_dir, "smf_conf.json")
 
-    # Check if the control_data.json file exists
+    # Check if the smf_conf.json file exists
     if not os.path.exists(conf_file_path):
         return {
             "status": "error",
-            "message": "control_data.json file not found."
+            "message": "smf_conf.json file not found."
         }, 404
 
-    # Read environmental settings from the control_data.json file
+    # Read environmental settings from the smf_conf.json file
     try:
         with open(conf_file_path, "r") as conf_file:
-            control_data = json.load(conf_file)
+            smf_conf = json.load(conf_file)
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Failed to read control_data.json: {str(e)}"
+            "message": f"Failed to read smf_conf.json: {str(e)}"
         }, 500
 
     # Prepare the message for the message broker
     msg = {
-        "control_data": control_data  # Include the file's contents
+        "smf_conf": smf_conf  
     }
 
     # Send the message to the message broker
@@ -220,8 +220,8 @@ def send_control_message_with_data():
 
     return {
         "status": "success",
-        "message": "Environmental condition change request sent successfully, including data_control.json contents.",
-        "control_data": control_data
+        "message": "Environmental condition change request sent successfully, including smf_conf.json contents.",
+        "smf_conf": smf_conf
     }, 200
 
 
@@ -605,7 +605,7 @@ def data_simulation():
 
     # Save the response_data to a JSON file
     try:
-        with open("control_data.json", "w") as json_file:
+        with open("smf_conf.json", "w") as json_file:
             json.dump(response_data, json_file, indent=4)
     except Exception as e:
         return jsonify({
