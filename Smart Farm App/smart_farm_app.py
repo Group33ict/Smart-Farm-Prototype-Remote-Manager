@@ -181,7 +181,7 @@ def request_wifi_change():
     }, 200
 
 
-def send_control_message_with_data():
+def request_environmental_change():
     """Send a request message to the message broker to change the environmental condition, including the smf_conf.json file contents."""
     # Get the absolute path to the current script's directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -734,12 +734,12 @@ def retrieve_sensor_data():
     return jsonify(response)
 
 
-@app.route('/send_control_message', methods=['POST'])
+@app.route('/request_environment_control', methods=['POST'])
 # @jwt_required() 
-def send_control_message():
+def request_environment_control():
     """API route to send a control message with smart farm data."""
     # Call the function to send the message
-    response = send_control_message_with_data()
+    response = request_environmental_change()
     return jsonify(response)
 
 
