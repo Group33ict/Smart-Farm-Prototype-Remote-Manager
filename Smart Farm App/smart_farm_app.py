@@ -76,6 +76,9 @@ class SmartFarmData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     updated_time = db.Column(db.DateTime, default=gmt7_now)
     co2 = db.Column(db.String(50), nullable=True)
+    temperature = db.Column(db.String(50), nullable=True)
+    humidity = db.Column(db.String(50), nullable=True)
+    light_intensity = db.Column(db.String(50), nullable=True)
 
 
 # Set up database function
