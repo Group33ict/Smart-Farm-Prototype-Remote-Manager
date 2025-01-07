@@ -92,7 +92,7 @@ def setup_database():
 def update_parameter(parameter_name, value):
     """Update a specific parameter and insert a new row."""
     # Check if the parameter is valid
-    valid_parameters = {"temperature", "humidity", "co2", "light_intensity", "color"}
+    valid_parameters = {"temperature", "humidity", "co2", "light_intensity"}
     if parameter_name not in valid_parameters:
         return {
             "status": "error",
@@ -114,8 +114,7 @@ def update_parameter(parameter_name, value):
         temperature=latest_entry.temperature if parameter_name != "temperature" else value,
         humidity=latest_entry.humidity if parameter_name != "humidity" else value,
         co2=latest_entry.co2 if parameter_name != "co2" else value,
-        light_intensity=latest_entry.light_intensity if parameter_name != "light_intensity" else value,
-        color=latest_entry.color if parameter_name != "color" else value
+        light_intensity=latest_entry.light_intensity if parameter_name != "light_intensity" else value
     )
 
     db.session.add(new_entry)
@@ -131,7 +130,6 @@ def update_parameter(parameter_name, value):
             "humidity": new_entry.humidity,
             "co2": new_entry.co2,
             "light_intensity": new_entry.light_intensity,
-            "color": new_entry.color,
         }
     }
     return response, 200
@@ -475,16 +473,6 @@ def login():
     }), 401
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
-@login_required
-def dashboard():
-    response = {
-        "status": "success",
-        "message": "Welcome to the Dashboard."
-    }
-    return jsonify(response)
-
-
 @app.route('/register', methods=['POST'])
 def register():
     # Parse JSON data
@@ -579,15 +567,13 @@ def data_simulation():
     humidity = incoming_data.get("humidity")
     co2 = incoming_data.get("co2")
     light_intensity = incoming_data.get("light_intensity")
-    color = incoming_data.get("color")
 
     # Insert new row into the database
     new_entry = SmartFarmData(
         temperature=temperature,
         humidity=humidity,
         co2=co2,
-        light_intensity=light_intensity,
-        color=color
+        light_intensity=light_intensity
     )
     db.session.add(new_entry)
     db.session.commit()
@@ -601,7 +587,6 @@ def data_simulation():
             "humidity": item.humidity,
             "co2": item.co2,
             "light_intensity": item.light_intensity,
-            "color": item.color,
         }
         for item in all_data
     ]
@@ -690,23 +675,6 @@ def update_light_intensity():
 
     parameter_name = "light_intensity"
     value = incoming_data["light_intensity"]
-    response, status_code = update_parameter(parameter_name, value)
-    return jsonify(response), status_code
-
-
-@app.route('/update_color', methods=['POST'])
-@jwt_required()
-def update_color():
-    incoming_data = request.get_json()
-
-    if "color" not in incoming_data:
-        return jsonify({
-            "status": "error",
-            "message": "Missing 'color' in request data."
-        }), 400
-
-    parameter_name = "color"
-    value = incoming_data["color"]
     response, status_code = update_parameter(parameter_name, value)
     return jsonify(response), status_code
 
