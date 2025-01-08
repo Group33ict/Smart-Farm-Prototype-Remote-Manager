@@ -774,7 +774,7 @@ def send_report(path):
     # Using request args for path will expose you to directory traversal attacks
     return send_from_directory('./static/iot/templates', path)
 
-rq.sf_send(topic=rq.IN_CHANNEL, msg="wifi_Duc Nguyen")
+# rq.sf_send(topic=rq.IN_CHANNEL, msg="wifi_CoderTapSu")
 
 
 
