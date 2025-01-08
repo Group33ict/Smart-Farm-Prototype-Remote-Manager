@@ -50,6 +50,41 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+/**
+ * Fetch fresh data from the backend using the `/retrieve_sensor_data` endpoint.
+ */
+async function refreshData() {
+  try {
+    console.log("Refreshing data from the backend...");
+
+    const response = await fetch(`${API_BASE_URL}/retrieve_sensor_data`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("access_token")}` // Optional JWT Token
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to refresh data: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("Data refreshed successfully:", result);
+
+    alert("Refresh successfully!");
+    fetchData(); // Re-fetch the updated data to display
+  } catch (error) {
+    console.error("Error refreshing data:", error);
+    alert("Cannot refresh.");
+  }
+}
+
+const refreshBtn = document.getElementById("btn-refresh");
+if (refreshBtn) {
+  refreshBtn.addEventListener("click", refreshData);
+}
+
 
 
 

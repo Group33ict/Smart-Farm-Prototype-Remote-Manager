@@ -388,19 +388,28 @@ def retrieve_and_save_smart_farm_data():
         saved_data = []
 
         for data in data_list:
-            co2 = data.get("co2")
-            # temp = data.get("temp")
-            # light_intensity = data.get("light")
+            co2 = data.get("CO2")
+            temperature = data.get("Temperature")
+            humidity = data.get("Humidity")
+            light_intensity = data.get("Light_0x5C")
             
             # Add a new record to the database for each item
             new_entry = SmartFarmData(
                 co2=co2,
-                # temperature=temp,
-                # light_intensity=light_intensity
+                temperature=temperature,
+                humidity=humidity,
+                light_intensity=light_intensity
             )
 
             db.session.add(new_entry)
-            saved_data.append({"co2": co2})
+            # saved_data.append({"co2": co2}, {"temperature": temperature}, {"humidity": humidity}, {"light_intensity": light_intensity}) 
+
+            saved_data.append({
+                "co2": co2,
+                "temperature": temperature,
+                "humidity": humidity,
+                "light_intensity": light_intensity
+            })
 
         db.session.commit()
 
@@ -535,6 +544,9 @@ def data_retrieval():
             {
                 "updated_time": item.updated_time.strftime("%Y-%m-%d %H:%M:%S") if item.updated_time else None,
                 "co2": item.co2,
+                "temperature": item.temperature,
+                "humidity": item.humidity,
+                "light_intensity": item.light_intensity,
             } 
             for item in all_data
         ]

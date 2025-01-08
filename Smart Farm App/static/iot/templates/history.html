@@ -40,11 +40,11 @@
                 </button>
             </form>
             <ul class="navbar-nav ms-auto my-2 my-lg-0"> 
+                <!--
                 <li class="nav-item dropdown"> 
-                  <!--  
-                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-cog"></i> Setting
-                    </a> -->
+                    </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="#">Action</a></li>
                         <li><a class="dropdown-item" href="#">Another action</a></li>
@@ -52,6 +52,7 @@
                         <li><a class="dropdown-item" href="#">Something else here</a></li>
                     </ul>
                 </li>
+                -->
                 <li class="nav-item dropdown"> 
                   <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                       <i class="fas fa-wifi"></i> WiFi
@@ -122,59 +123,47 @@
     </nav>
     
     <!-- Main Content -->
-  <div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Welcome back</h2>
-    </div>
-
-    <!-- Overview Widgets -->
-    <div class="row text-center mb-4">
-      <div class="col-md-3">
-        <div class="card p-3">
-          <i class="fas fa-sun fa-2x text-warning"></i>
-          <h5>Light</h5>
-          <p id="light-value">-- lx</p>
+    <div class="container mt-5">
+      <h1 class="text-center">Historical Data</h1>
+  
+      <!-- Filter Options -->
+      <div class="row my-4">
+        <div class="col-md-6">
+          <label for="time-filter" class="form-label">Select Time Filter:</label>
+          <select id="time-filter" class="form-select">
+            <option value="all">All</option>
+            <option value="day">Last 24 Hours</option>
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+          </select>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card p-3">
-          <i class="fas fa-thermometer-half fa-2x text-danger"></i>
-          <h5>Temperature</h5>
-          <p id="temperature-value">-- °C</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card p-3">
-          <i class="fas fa-tint fa-2x text-info"></i>
-          <h5>Humidity</h5>
-          <p id="humidity-value">-- %</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card p-3">
-          <i class="fas fa-cloud fa-2x text-secondary"></i>
-          <h5>CO₂</h5>
-          <p id="co2-value">-- ppm</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Data Visualization Section -->
-    <div id="charts" class="row">
-      <div class="col-md-12">
-        <div class="card p-3">
-          <h4>Data Visualization</h4>
-          <canvas id="dataChart"></canvas>
-        </div>
+  
+      <!-- Alert Message -->
+      <div id="alert-message" class="alert alert-danger" style="display: none;"></div>
+  
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Time</th>
+              <th>Temperature</th>
+              <th>Humidity</th>
+              <th>CO₂</th>
+              <th>Light Intensity</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body"></tbody>
+        </table>
       </div>
     </div>
-    
   </div>
   
 
   
   <!-- Custom JavaScript -->
-  <script src="../js/dashboard.js"></script>
+  <script src="../js/history.js"></script>
 
   <!-- Bootstrap JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
