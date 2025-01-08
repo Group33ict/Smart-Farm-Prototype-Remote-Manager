@@ -18,9 +18,9 @@ document.getElementById('signin-form').addEventListener('submit', async function
     const data = await response.json();
 
     if (response.ok) {
-      // Login success, you can store the JWT token (here for example, in localStorage)
+      // Login success, you can store the JWT token 
       localStorage.setItem('auth_token', data.token);
-      window.location.href = 'dashboard.html'; // Redirect to dashboard or home page
+      window.location.href = 'dashboard.html'; // Redirect to dashboard 
     } else {
       // Show error message
       document.getElementById('signin-error-message').textContent = data.message;
