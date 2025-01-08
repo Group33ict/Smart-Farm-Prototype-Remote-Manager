@@ -19,7 +19,6 @@ document.getElementById('signup-form').addEventListener('submit', async function
     const data = await response.json();
 
     if (response.ok) {
-      // Registration success, you can redirect to the sign-in page
       window.location.href = 'signin.html'; // Redirect to sign in page
     } else {
       // Show error message

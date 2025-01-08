@@ -40,7 +40,8 @@
                 </button>
             </form>
             <ul class="navbar-nav ms-auto my-2 my-lg-0"> 
-                <li class="nav-item dropdown"> 
+              <!-- 
+              <li class="nav-item dropdown"> 
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-cog"></i> Setting
                     </a>
@@ -51,6 +52,7 @@
                         <li><a class="dropdown-item" href="#">Something else here</a></li>
                     </ul>
                 </li>
+                --> 
                 <li class="nav-item dropdown"> 
                   <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                       <i class="fas fa-wifi"></i> WiFi
@@ -199,23 +201,25 @@
         <!-- Control Buttons Section -->
         <div class="control-panel mt-4">
           <div class="row mb-4">
-            <div>
-              <h3>Light Control</h3>
-              <button id="btn-light-on">Turn Light On</button>
-              <button id="btn-light-off">Turn Light Off</button>
+            <div class="col-md-4">
+              <h3 class="mb-3">Light Control</h3>
+              <button id="btn-light-on" class="btn btn-dark mb-2 w-100">Turn Light On</button>
+              <button id="btn-light-off" class="btn btn-dark w-100">Turn Light Off</button>
             </div>
-          
-            <div>
-              <h3>Fan Control</h3>
-              <button id="btn-fan-on">Turn Fan On</button>
-              <button id="btn-fan-off">Turn Fan Off</button>
+
+            <div class="col-md-4">
+              <h3 class="mb-3">Fan<br> Control</h3>
+              <button id="btn-fan-on" class="btn btn-dark mb-2 w-100">Turn Fan On</button>
+              <button id="btn-fan-off" class="btn btn-dark w-100">Turn Fan Off</button>
             </div>
-          
-            <div>
-              <h3>Window Control</h3>
-              <button id="btn-window-open">Open Window</button>
-              <button id="btn-window-close">Close Window</button>
+
+            <div class="col-md-4">
+              <h3 class="mb-3">Window Control</h3>
+              <button id="btn-window-open" class="btn btn-dark mb-2 w-100">Open Window</button>
+              <button id="btn-window-close" class="btn btn-dark w-100">Close Window</button>
             </div>
+          </div>
+        </div>
           
       </div>
     </div>
