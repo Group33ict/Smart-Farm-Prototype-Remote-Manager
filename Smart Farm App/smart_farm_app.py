@@ -432,6 +432,32 @@ def retrieve_and_save_smart_farm_data():
         }
 
 
+def connect_successfully():
+    try:
+        # Simulate receiving a status from the WiFi channel
+        connect_status = rq.sf_recv_from_wfout(topic=rq.WIFI_CHANNEL)
+        
+        # Check the connection status (you can modify the condition based on your implementation)
+        if connect_status == "1":
+            response = {
+                "message": "Connected successfully",
+                "status_code": 200
+            }
+        else:
+            response = {
+                "message": "Failed to connect",
+                "status_code": 500
+            }
+    except Exception as e:
+        # Handle exceptions and provide an error response
+        response = {
+            "message": f"Error: {str(e)}",
+            "status_code": 500
+        }
+    
+    return response
+
+
 
 # JWT Authentication API routes
 
@@ -766,6 +792,12 @@ def open_fan():
 def close_fan():
     status_code = close_smart_farm_fan()
     return  status_code
+
+
+@app.route('/connect_status', methods=['GET'])
+def connect_status():
+    response = connect_successfully()
+    return jsonify(response)
 
 
 # Serve static file function
